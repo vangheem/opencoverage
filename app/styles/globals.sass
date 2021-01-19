@@ -1,0 +1,32 @@
+// We can import bulma into the project using Sass.
+@import '../node_modules/bulma/bulma.sass'
+
+.source
+    clear: both
+
+.line
+    height: 30px
+    font-family: monospace
+
+    .line-number
+        float: left
+        width: 40px
+        padding: 3px 3px 3px 6px
+        background-color: rgb(196, 196, 196)
+
+    .line-source
+        padding-left: 34px
+        height: 30px
+
+.covered
+    .line-source
+        background-color: #03c52c73
+.diff-covered
+    .line-source
+        background-color: #04ff00bf
+.not-covered
+    .line-source
+        background-color: #ffc800bf
+.not-diff-covered
+    .line-source
+        background-color: #ff0b00bf

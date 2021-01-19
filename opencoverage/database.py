@@ -1,0 +1,377 @@
+from datetime import datetime
+from typing import List, Optional, Tuple, TypedDict, cast
+
+import sqlalchemy.exc
+import sqlalchemy.orm.exc
+from asyncom.om import OMDatabase
+from databases import DatabaseURL
+
+from . import models, types
+from .models import (
+    Branch,
+    Commit,
+    CoverageRecord,
+    CoverageReport,
+    CoverageReportPullRequest,
+    Organization,
+    PullRequest,
+    Repo,
+)
+from .settings import Settings
+
+
+class ReportFilesType(TypedDict):
+    filename: str
+    line_rate: float
+
+
+class Database:
+    def __init__(self, settings: Settings):
+        models.init(settings.dsn)
+        self.db = OMDatabase(DatabaseURL(settings.dsn))
+
+    async def initialize(self):
+        if not self.db.is_connected:
+            await self.db.connect()
+
+    async def finalize(self):
+        if self.db.is_connected:
+            try:
+                await self.db.disconnect()
+            except RuntimeError:
+                # loop closing
+                ...
+
+    async def _ensure_ob(self, model, **data):
+        filters = []
+        for key, value in data.items():
+            filters.append(getattr(model, key) == value)
+        try:
+            return await self.db.query(model).filter(*filters).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            ob = model(
+                creation_date=datetime.utcnow(),
+                modification_date=datetime.utcnow(),
+                **data,
+            )
+            await self.db.add(ob)
+            return ob
+
+    async def _paged_results(
+        self,
+        model,
+        query,
+        cursor_type,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+        reverse: bool = False,
+    ) -> Tuple[Optional[str], List[models.Base]]:
+        if cursor is not None:
+            query = query.filter(cursor_type > cursor)
+        if reverse:
+            query = query.order_by(cursor_type.desc()).limit(limit)
+        else:
+            query = query.order_by(cursor_type).limit(limit)
+        results = await query.all()
+        cursor = None
+        if len(results) == limit:
+            cursor = results[-1].name
+        return cursor, results
+
+    async def get_repos(
+        self, organization: str, limit: int = 10, cursor: Optional[str] = None
+    ) -> Tuple[Optional[str], List[Repo]]:
+        return await self._paged_results(
+            Repo,
+            self.db.query(Repo).filter(Repo.organization == organization),
+            Repo.name,
+            limit=limit,
+            cursor=cursor,
+        )
+
+    async def get_reports(
+        self,
+        organization: Optional[str] = None,
+        repo: Optional[str] = None,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+    ) -> Tuple[str, List[CoverageReport]]:
+        query = self.db.query(CoverageReport)
+        if organization is not None:
+            query = query.filter(CoverageReport.organization == organization)
+        if repo is not None:
+            query = query.filter(CoverageReport.repo == repo)
+        return cast(
+            Tuple[str, List[CoverageReport]],
+            await self._paged_results(
+                CoverageReport,
+                query,
+                CoverageReport.modification_date,
+                limit=limit,
+                cursor=cursor,
+                reverse=True,
+            ),
+        )
+
+    async def get_pr_reports(
+        self,
+        organization: Optional[str] = None,
+        repo: Optional[str] = None,
+        pull: Optional[int] = None,
+        commit: Optional[str] = None,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+    ) -> Tuple[str, List[CoverageReportPullRequest]]:
+        query = self.db.query(
+            [CoverageReportPullRequest, CoverageReport],
+            mapper_factory=lambda q, context: lambda v: v,
+        )
+        if organization is not None:
+            query = query.filter(CoverageReportPullRequest.organization == organization)
+        if repo is not None:
+            query = query.filter(CoverageReportPullRequest.repo == repo)
+        if pull is not None:
+            query = query.filter(CoverageReportPullRequest.pull == int(pull))
+        if commit is not None:
+            query = query.filter(CoverageReportPullRequest.commit_hash == commit)
+        query.outerjoin(
+            CoverageReport,
+            CoverageReportPullRequest.commit_hash == CoverageReport.commit_hash,
+        )
+        return cast(
+            Tuple[str, List[CoverageReportPullRequest]],
+            await self._paged_results(
+                CoverageReportPullRequest,
+                query,
+                CoverageReportPullRequest.modification_date,
+                limit=limit,
+                cursor=cursor,
+                reverse=True,
+            ),
+        )
+
+    async def get_report(
+        self, organization: str, repo: str, commit: str
+    ) -> Optional[CoverageReport]:
+        try:
+            return (
+                await self.db.query(CoverageReport)
+                .filter(
+                    CoverageReport.organization == organization,
+                    CoverageReport.repo == repo,
+                    CoverageReport.commit_hash == commit,
+                )
+                .one()
+            )
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
+    async def get_pulls(
+        self, organization: str, repo: str, limit: int = 10, cursor: Optional[str] = None
+    ) -> Tuple[str, List[PullRequest]]:
+        return cast(
+            Tuple[str, List[PullRequest]],
+            await self._paged_results(
+                PullRequest,
+                self.db.query(PullRequest).filter(
+                    PullRequest.organization == organization, PullRequest.repo == repo
+                ),
+                PullRequest.id,
+                limit=limit,
+                cursor=cursor,
+                reverse=True,
+            ),
+        )
+
+    async def get_report_files(
+        self,
+        organization: str,
+        repo: str,
+        commit_hash: str,
+        limit: int = 500,
+        cursor: Optional[str] = None,
+    ) -> Tuple[Optional[str], List[ReportFilesType]]:
+        query = self.db.query(
+            [
+                CoverageRecord.filename.label("filename"),
+                CoverageRecord.line_rate.label("line_rate"),
+            ],
+            mapper_factory=lambda q, context: lambda v: v,
+        ).filter(
+            CoverageRecord.organization == organization,
+            CoverageRecord.repo == repo,
+            CoverageRecord.commit_hash == commit_hash,
+        )
+        if cursor is not None:
+            query = query.filter(CoverageRecord.filename > cursor)
+        query = query.order_by(CoverageRecord.filename).limit(limit)
+        results: List[ReportFilesType] = await query.all()
+        cursor = None
+        if len(results) == limit:
+            cursor = results[-1]["filename"]
+        return cursor, results
+
+    async def get_report_file(
+        self, organization: str, repo: str, commit_hash: str, filename: str
+    ) -> Optional[CoverageRecord]:
+        try:
+            return (
+                await self.db.query(CoverageRecord)
+                .filter(
+                    CoverageRecord.organization == organization,
+                    CoverageRecord.repo == repo,
+                    CoverageRecord.commit_hash == commit_hash,
+                    CoverageRecord.filename == filename,
+                )
+                .one()
+            )
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
+    def _update_coverage_data(
+        self,
+        report,
+        coverage: types.CoverageData,
+    ) -> None:
+        for name in (
+            "lines_valid",
+            "lines_covered",
+            "line_rate",
+            "branches_valid",
+            "branches_covered",
+            "branch_rate",
+            "complexity",
+        ):
+            setattr(report, name, coverage[name])  # type: ignore
+        report.modification_date = datetime.utcnow()
+
+    async def get_coverage_diff(
+        self,
+        *,
+        organization: str,
+        repo: str,
+        branch: str,
+        commit_hash: str,
+        pull: types.Pull,
+    ) -> Optional[CoverageReportPullRequest]:
+        try:
+            return (
+                await self.db.query(CoverageReportPullRequest)
+                .filter(
+                    CoverageReportPullRequest.organization == organization,
+                    CoverageReportPullRequest.branch == branch,
+                    CoverageReportPullRequest.repo == repo,
+                    CoverageReportPullRequest.commit_hash == commit_hash,
+                    CoverageReportPullRequest.pull == pull.id,
+                )
+                .one()
+            )
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
+    async def update_coverage_diff(self, *, report: CoverageReportPullRequest) -> None:
+        await self.db.update(report)
+
+    async def create_coverage_diff(
+        self,
+        *,
+        organization: str,
+        repo: str,
+        branch: str,
+        commit_hash: str,
+        pull: types.Pull,
+        pull_diff: List[types.DiffCoverage],
+        check_id: str,
+        comment_id: str,
+        line_rate: float,
+    ) -> None:
+        await self._ensure_ob(
+            Branch, name=pull.base, organization=organization, repo=repo
+        )
+        await self._ensure_ob(
+            PullRequest,
+            organization=organization,
+            repo=repo,
+            id=pull.id,
+            base=pull.base,
+            head=pull.head,
+        )
+
+        report = CoverageReportPullRequest(
+            organization=organization,
+            branch=branch,
+            repo=repo,
+            commit_hash=commit_hash,
+            pull=pull.id,
+            pull_diff=pull_diff,
+            check_id=check_id,
+            comment_id=comment_id,
+            line_rate=line_rate,
+            creation_date=datetime.utcnow(),
+            modification_date=datetime.utcnow(),
+        )
+        await self.db.add(report)
+
+    async def save_coverage(
+        self,
+        *,
+        organization: str,
+        repo: str,
+        branch: str,
+        commit_hash: str,
+        coverage: types.CoverageData,
+    ) -> None:
+        await self._ensure_ob(Organization, name=organization)
+        await self._ensure_ob(Repo, name=repo, organization=organization)
+        await self._ensure_ob(Branch, name=branch, organization=organization, repo=repo)
+        await self._ensure_ob(
+            Commit, branch=branch, organization=organization, repo=repo, hash=commit_hash
+        )
+
+        try:
+            report = (
+                await self.db.query(CoverageReport)
+                .filter(
+                    CoverageReport.organization == organization,
+                    CoverageReport.branch == branch,
+                    CoverageReport.repo == repo,
+                    CoverageReport.commit_hash == commit_hash,
+                )
+                .one()
+            )
+            self._update_coverage_data(report, coverage)
+            await self.db.update(report)
+        except sqlalchemy.orm.exc.NoResultFound:
+            report = CoverageReport(
+                organization=organization,
+                branch=branch,
+                repo=repo,
+                commit_hash=commit_hash,
+                creation_date=datetime.utcnow(),
+            )
+            self._update_coverage_data(report, coverage)
+            await self.db.add(report)
+
+        async with self.db.transaction():
+            await self.db.query(CoverageRecord).filter(
+                CoverageRecord.branch == branch,
+                CoverageRecord.organization == organization,
+                CoverageRecord.repo == repo,
+                CoverageRecord.commit_hash == commit_hash,
+            ).delete()
+            for filename, source in coverage["file_coverage"].items():
+                await self.db.add(
+                    CoverageRecord(
+                        branch=branch,
+                        organization=organization,
+                        repo=repo,
+                        commit_hash=commit_hash,
+                        filename=filename,
+                        lines=source["lines"],
+                        line_rate=source["line_rate"],
+                        branch_rate=source["branch_rate"],
+                        complexity=source["complexity"],
+                        creation_date=datetime.utcnow(),
+                        modification_date=datetime.utcnow(),
+                    )
+                )

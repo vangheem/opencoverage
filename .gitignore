@@ -1,0 +1,8 @@
+.coverage
+build/
+downloads/
+fs/
+image/
+pdf/
+*.swp
+.mypy_cache/

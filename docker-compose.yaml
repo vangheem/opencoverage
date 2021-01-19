@@ -1,0 +1,14 @@
+version: "2"
+services:
+  postgres:
+    image: gcr.io/atlas-images/postgres:12
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: opencoverage
+      POSTGRES_PASSWORD: secret
+      POSTGRES_INITDB_ARGS: --data-checksums
+      POSTGRES_DB: opencoverage
+
