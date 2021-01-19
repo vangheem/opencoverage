@@ -21,11 +21,11 @@ async def get_repos(org: str, request: Request, cursor: Optional[str] = None):
     return {"cursor": cursor, "result": result}
 
 
-@router.get("/{org}/repos/{repo}/commits/{commit}/report")
-async def get_report(org: str, repo: str, commit: str, request: Request):
-    db = request.app.db
-    report = await db.get_report(org, repo, commit)
+def _format_report(report):
     return {
+        "__type": "CoverageReport",
+        "organization": report.organization,
+        "repo": report.repo,
         "branch": report.branch,
         "commit_hash": report.commit_hash,
         "lines_valid": report.lines_valid,
@@ -35,37 +35,33 @@ async def get_report(org: str, repo: str, commit: str, request: Request):
         "branches_covered": report.branches_covered,
         "branch_rate": report.branch_rate,
         "complexity": report.complexity,
+        "modification_date": report.modification_date,
+        "creation_date": report.creation_date,
     }
 
 
+@router.get("/{org}/repos/{repo}/commits/{commit}/report")
+async def get_report(org: str, repo: str, commit: str, request: Request):
+    db = request.app.db
+    report = await db.get_report(org, repo, commit)
+    return _format_report(report)
+
+
 @router.get("/recent-reports")
-async def get_recent_reports(request: Request, cursor: Optional[str] = None):
+async def get_recent_reports(
+    request: Request, branch: Optional[str] = None, cursor: Optional[str] = None
+):
     db = request.app.db
     result = []
-    cursor, reports = await db.get_reports(cursor=cursor)
+    cursor, reports = await db.get_reports(branch=branch, cursor=cursor)
     for report in reports:
-        result.append(
-            {
-                "organization": report.organization,
-                "repo": report.repo,
-                "branch": report.branch,
-                "commit_hash": report.commit_hash,
-                "lines_valid": report.lines_valid,
-                "lines_covered": report.lines_covered,
-                "line_rate": report.line_rate,
-                "branches_valid": report.branches_valid,
-                "branches_covered": report.branches_covered,
-                "branch_rate": report.branch_rate,
-                "complexity": report.complexity,
-                "modification_date": report.modification_date,
-                "creation_date": report.creation_date,
-            }
-        )
+        result.append(_format_report(report))
     return {"cursor": cursor, "result": result}
 
 
 def _format_pr_report(report):
     return {
+        "__type": "CoverageReportPullRequest",
         "organization": report["coveragereportpullrequests_organization"],
         "repo": report["coveragereportpullrequests_repo"],
         "branch": report["coveragereportpullrequests_branch"],
@@ -107,21 +103,7 @@ async def get_reports(
     result = []
     cursor, reports = await db.get_reports(org, repo, cursor=cursor)
     for report in reports:
-        result.append(
-            {
-                "branch": report.branch,
-                "commit_hash": report.commit_hash,
-                "lines_valid": report.lines_valid,
-                "lines_covered": report.lines_covered,
-                "line_rate": report.line_rate,
-                "branches_valid": report.branches_valid,
-                "branches_covered": report.branches_covered,
-                "branch_rate": report.branch_rate,
-                "complexity": report.complexity,
-                "modification_date": report.modification_date,
-                "creation_date": report.creation_date,
-            }
-        )
+        result.append(_format_report(report))
     return {"cursor": cursor, "result": result}
 
 
@@ -167,6 +149,7 @@ async def get_file(org: str, repo: str, commit: str, request: Request, filename:
     if fi is None:
         return JSONResponse({"reason": "fileNotFound"}, status_code=404)
     return {
+        "__type": "ReportFile",
         "filename": fi.filename,
         "organization": fi.organization,
         "repo": fi.repo,

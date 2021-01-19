@@ -4,7 +4,7 @@ from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
 from opencoverage.reporter import CoverageReporter
-
+import zlib
 from .app import router
 
 
@@ -19,6 +19,11 @@ async def upload_report(
     request: Request, branch: str, commit: str, slug: str, token: Optional[str] = None
 ):
     data = await request.body()
+
+    if request.headers.get("content-type") == "application/x-gzip":
+        gzip_worker = zlib.decompressobj(zlib.MAX_WBITS | 16)
+        data = gzip_worker.decompress(data) + gzip_worker.flush()
+
     organization, _, repo = slug.partition("/")
 
     reporter = CoverageReporter(

@@ -15,13 +15,20 @@ lint:
 mypy:
 	$(POETRY) run mypy -p opencoverage
 
+test-dev:
+	$(POETRY) run pytest tests --env=.env.dev
+
 test:
 	$(POETRY) run pytest tests
 
 coverage:
-	$(POETRY) run coverage run -m pytest -v tests/ --junitxml=build/test.xml
-	$(POETRY) run coverage xml -i -o build/coverage.xml
-	$(POETRY) run coverage report
+	$(POETRY) run pytest -v tests -s --tb=native -v --cov=opencoverage --cov-report xml
+
+coverage-dev:
+	$(POETRY) run pytest -v tests -s --tb=native -v --cov=opencoverage --cov-report xml --env=.env.dev
+
+send-codecov:
+	$(POETRY) run codecov --url="http://localhost:8000" --token=foobar --slug=vangheem/opencoverage
 
 run:
 	$(POETRY) run opencoverage

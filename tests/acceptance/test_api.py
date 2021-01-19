@@ -19,7 +19,7 @@ async def test_upload(http_client, scm):
     resp = await http_client.put(
         "/upload-report",
         query_string={"slug": "plone/guillotina", "branch": "master", "commit": "38432y"},
-        data=read_data("guillotina.coverage"),
+        data=read_data("guillotina.cov"),
     )
     assert resp.status_code == 200
 
@@ -60,18 +60,14 @@ index 8ad9304b..de0e1d25 100644
 
 
 async def test_get_repos(http_client, app):
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "123", "guillotina.coverage"
-    )
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
     resp = await http_client.get("/plone/repos")
     assert resp.status_code == 200
     assert resp.json() == {"cursor": None, "result": [{"name": "guillotina"}]}
 
 
 async def test_get_report(http_client, app):
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "123", "guillotina.coverage"
-    )
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
     resp = await http_client.get("/plone/repos/guillotina/commits/123/report")
     assert resp.status_code == 200
     data = resp.json()
@@ -79,12 +75,8 @@ async def test_get_report(http_client, app):
 
 
 async def test_get_reports(http_client, app):
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "123", "guillotina.coverage"
-    )
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "1234", "guillotina.coverage"
-    )
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
+    await add_coverage(app.db, "plone", "guillotina", "master", "1234", "guillotina.cov")
     resp = await http_client.get("/plone/repos/guillotina/reports")
     assert resp.status_code == 200
     data = resp.json()
@@ -92,9 +84,7 @@ async def test_get_reports(http_client, app):
 
 
 async def test_get_files(http_client, app):
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "123", "guillotina.coverage"
-    )
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
     resp = await http_client.get("/plone/repos/guillotina/commits/123/files")
     assert resp.status_code == 200
     data = resp.json()
@@ -102,9 +92,7 @@ async def test_get_files(http_client, app):
 
 
 async def test_get_file(http_client, app):
-    await add_coverage(
-        app.db, "plone", "guillotina", "master", "123", "guillotina.coverage"
-    )
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
     resp = await http_client.get(
         "/plone/repos/guillotina/commits/123/file",
         query_string={"filename": "guillotina/content.py"},

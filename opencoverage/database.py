@@ -93,6 +93,7 @@ class Database:
         self,
         organization: Optional[str] = None,
         repo: Optional[str] = None,
+        branch: Optional[str] = None,
         limit: int = 10,
         cursor: Optional[str] = None,
     ) -> Tuple[str, List[CoverageReport]]:
@@ -101,6 +102,8 @@ class Database:
             query = query.filter(CoverageReport.organization == organization)
         if repo is not None:
             query = query.filter(CoverageReport.repo == repo)
+        if branch is not None:
+            query = query.filter(CoverageReport.branch == branch)
         return cast(
             Tuple[str, List[CoverageReport]],
             await self._paged_results(
