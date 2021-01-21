@@ -3,6 +3,7 @@ name = "opencoverage"
 version = "0.0.1"
 description = ""
 authors = ["vangheem"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
