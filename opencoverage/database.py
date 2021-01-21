@@ -1,5 +1,11 @@
 from datetime import datetime
-from typing import List, Optional, Tuple, TypedDict, cast
+from typing import (
+    List,
+    Optional,
+    Tuple,
+    TypedDict,
+    cast,
+)
 
 import sqlalchemy.exc
 import sqlalchemy.orm.exc
@@ -315,6 +321,33 @@ class Database:
         )
         await self.db.add(report)
 
+    async def update_organization(self, name: str, install_id: str):
+        try:
+            org = (
+                await self.db.query(Organization)
+                .filter(
+                    Organization.name == name,
+                )
+                .one()
+            )
+            org.installation_id = install_id
+            await self.db.update(org)
+        except sqlalchemy.orm.exc.NoResultFound:
+            org = Organization(name=name, installation_id=install_id)
+            await self.db.add(org)
+
+    async def get_organization(self, name: str) -> Optional[Organization]:
+        try:
+            return (
+                await self.db.query(Organization)
+                .filter(
+                    Organization.name == name,
+                )
+                .one()
+            )
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
     async def save_coverage(
         self,
         *,
@@ -324,7 +357,6 @@ class Database:
         commit_hash: str,
         coverage: types.CoverageData,
     ) -> None:
-        await self._ensure_ob(Organization, name=organization)
         await self._ensure_ob(Repo, name=repo, organization=organization)
         await self._ensure_ob(Branch, name=branch, organization=organization, repo=repo)
         await self._ensure_ob(

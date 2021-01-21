@@ -1,4 +1,9 @@
-from typing import Dict, List, TypedDict, Optional
+from typing import (
+    Dict,
+    List,
+    Optional,
+    TypedDict,
+)
 
 import pydantic
 

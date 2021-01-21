@@ -18,4 +18,4 @@ class Settings(BaseSettings):
     scm: str
     github_app_id: Optional[str]
     github_app_pem_file: Optional[str]
-    github_installation_id: Optional[str]
+    github_default_installation_id: Optional[str]

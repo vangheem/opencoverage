@@ -6,6 +6,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    cast,
 )
 
 import jwt
@@ -127,44 +128,63 @@ class GithubComment(pydantic.BaseModel):
 GITHUB_API_URL = "https://api.github.com"
 
 
-class Github(SCMClient):
-    _access_data: Optional[GithubAccessData]
-    _jwt_token: Optional[str]
+class Token(pydantic.BaseModel):
+    jwt_token: str
+    jwt_expiration: int
+    access_data: Optional[GithubAccessData]
 
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
+
+# this should
+_token_cache: Dict[str, Token] = {}
+
+
+class Github(SCMClient):
+    def __init__(self, settings: Settings, installation_id: Optional[str]):
+        super().__init__(settings, installation_id)
+        self.installation_id = cast(
+            str, installation_id or settings.github_default_installation_id
+        )
         if settings.github_app_pem_file is None:
             raise TypeError("Must configure github_app_pem_file")
         with open(settings.github_app_pem_file, "rb") as fi:
             self._private_key = default_backend().load_pem_private_key(fi.read(), None)
-        self._jwt_token = None
-        self._jwt_expiration = 0
-        self._access_data = None
 
     def _get_jwt_token(self) -> str:
         time_since_epoch_in_seconds = int(time.time())
-        if self._jwt_token is None or self._jwt_expiration < (
+        token_data = _token_cache.get(self.installation_id)
+        if token_data is None or token_data.jwt_expiration < (
             time_since_epoch_in_seconds - 10
         ):
-            self._jwt_expiration = time_since_epoch_in_seconds + (10 * 60)
-            self._jwt_token = jwt.encode(
-                {
-                    # issued at time
-                    "iat": time_since_epoch_in_seconds,
-                    # JWT expiration time (10 minute maximum)
-                    "exp": self._jwt_expiration,
-                    # GitHub App's identifier
-                    "iss": self.settings.github_app_id,
-                },
-                self._private_key,
-                algorithm="RS256",
+            jwt_expiration = time_since_epoch_in_seconds + (10 * 60)
+            _token_cache[self.installation_id] = Token(
+                jwt_expiration=jwt_expiration,
+                jwt_token=jwt.encode(
+                    {
+                        # issued at time
+                        "iat": time_since_epoch_in_seconds,
+                        # JWT expiration time (10 minute maximum)
+                        "exp": jwt_expiration,
+                        # GitHub App's identifier
+                        "iss": self.settings.github_app_id,
+                    },
+                    self._private_key,
+                    algorithm="RS256",
+                ),
             )
-        return self._jwt_token
+        return _token_cache[self.installation_id].jwt_token
 
     async def _get_access_token(self) -> str:
+        token_data = _token_cache.get(self.installation_id)
+
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
-        if self._access_data is None or self._access_data.expires_at > now:
-            url = f"{GITHUB_API_URL}/app/installations/{self.settings.github_installation_id}/access_tokens"
+        if (
+            token_data is None
+            or token_data.access_data is None
+            or token_data.access_data.expires_at > now
+        ):
+            url = (
+                f"{GITHUB_API_URL}/app/installations/{self.installation_id}/access_tokens"
+            )
             jwt_token = self._get_jwt_token()
             async with self.session.post(
                 url,
@@ -179,8 +199,11 @@ class Github(SCMClient):
                         f"Could not authenticate with pem: {resp.status}: {text}"
                     )
                 data = await resp.json()
-                self._access_data = GithubAccessData.parse_obj(data)
-        return self._access_data.token
+                access_data = GithubAccessData.parse_obj(data)
+                _token_cache[self.installation_id].access_data = access_data
+            return access_data.token
+        else:
+            return token_data.access_data.token
 
     async def _prepare_request(
         self,

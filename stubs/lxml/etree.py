@@ -1,4 +1,8 @@
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
+
+
+class XMLSyntaxError(Exception):
+    ...
 
 
 class Element:

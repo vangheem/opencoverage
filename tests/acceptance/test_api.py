@@ -10,7 +10,9 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture(autouse=True)
 def scm_app(scm):
-    with patch("opencoverage.api.app.scm.get_client", return_value=scm):
+    with patch("opencoverage.api.api.get_client", return_value=scm), patch(
+        "opencoverage.api.upload.get_client", return_value=scm
+    ):
         yield
 
 

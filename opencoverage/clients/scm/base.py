@@ -1,5 +1,5 @@
 import abc
-from typing import AsyncIterator, List
+from typing import AsyncIterator, List, Optional
 
 import aiohttp
 
@@ -8,7 +8,9 @@ from opencoverage.types import Pull
 
 
 class SCMClient(abc.ABC):
-    def __init__(self, settings: Settings):
+    installation_id: str
+
+    def __init__(self, settings: Settings, installation_id: Optional[str]):
         self.settings = settings
         self._session = None
 

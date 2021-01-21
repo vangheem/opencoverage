@@ -17,6 +17,7 @@ class Organization(Base):  # type: ignore
 
     creation_date = sa.Column(sa.DateTime)
     modification_date = sa.Column(sa.DateTime)
+    installation_id = sa.Column(sa.String)
 
 
 class Repo(Base):  # type: ignore

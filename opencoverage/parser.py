@@ -1,6 +1,6 @@
 import os
 from io import StringIO
-from typing import List, Dict
+from typing import Dict, List
 
 from lxml import etree
 from unidiff import PatchSet
@@ -20,8 +20,8 @@ def get_el(el: etree.Element, name: str) -> etree.Element:
 
 
 def parse_files(data: str) -> Dict[str, str]:
-    files = {}
-    lines = []
+    files: Dict[str, str] = {}
+    lines: List[str] = []
     filename = None
     for line in data.strip().splitlines():
         if line == "<<<<<< EOF":

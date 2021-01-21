@@ -13,6 +13,7 @@ def pg_dsn():
 @pytest.fixture()
 def scm():
     mock = AsyncMock()
+    mock.installation_id = "1234"
     yield mock
 
 

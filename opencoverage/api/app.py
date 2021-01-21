@@ -1,7 +1,6 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from opencoverage.clients import scm
 from opencoverage.database import Database
 from opencoverage.settings import Settings
 
@@ -16,7 +15,6 @@ class HTTPApplication(FastAPI):
         self.db = Database(settings)
 
         self.settings = settings
-        self.scm = scm.get_client(settings)
 
         self.add_event_handler("startup", self.initialize)
         self.add_event_handler("shutdown", self.finalize)
@@ -33,4 +31,3 @@ class HTTPApplication(FastAPI):
 
     async def finalize(self) -> None:
         await self.db.finalize()
-        await self.scm.close()

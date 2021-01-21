@@ -4,6 +4,8 @@ from fastapi.responses import StreamingResponse
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from opencoverage.clients.scm import get_client
+
 from .app import router
 
 
@@ -168,5 +170,6 @@ async def get_file(org: str, repo: str, commit: str, request: Request, filename:
 async def download_file(
     org: str, repo: str, commit: str, request: Request, filename: str
 ):
-    scm = request.app.scm
+    organization = await request.app.db.get_organization(org)
+    scm = get_client(request.app.settings, organization.installation_id)
     return StreamingResponse(scm.download_file(org, repo, commit, filename))

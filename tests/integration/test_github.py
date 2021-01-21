@@ -8,7 +8,7 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture()
 async def github():
-    client = get_client(Settings(scm="github"))
+    client = get_client(Settings(scm="github"), None)
     yield client
     await client.close()
 

@@ -1,10 +1,12 @@
+import zlib
 from typing import Optional
 
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
+from opencoverage.clients.scm import get_client
 from opencoverage.reporter import CoverageReporter
-import zlib
+
 from .app import router
 
 
@@ -26,10 +28,18 @@ async def upload_report(
 
     organization, _, repo = slug.partition("/")
 
+    if token == "dummy":
+        installation_id = None
+    else:
+        installation_id = token
+
+    scm = get_client(request.app.settings, installation_id)
+    await request.app.db.update_organization(organization, scm.installation_id)
+
     reporter = CoverageReporter(
         settings=request.app.settings,
         db=request.app.db,
-        scm=request.app.scm,
+        scm=scm,
         organization=organization,
         repo=repo,
         branch=branch,

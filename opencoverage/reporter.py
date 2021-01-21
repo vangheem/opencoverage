@@ -1,5 +1,7 @@
-from opencoverage.settings import Settings
 from typing import List
+
+from opencoverage.settings import Settings
+
 from . import types
 from .clients import SCMClient
 from .database import Database
