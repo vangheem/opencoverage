@@ -1,3 +1,4 @@
+import os
 from unittest.mock import AsyncMock
 
 import pytest
@@ -7,7 +8,10 @@ from opencoverage.settings import Settings
 
 @pytest.fixture()
 def pg_dsn():
-    yield "postgresql://opencoverage:secret@localhost:5432/opencoverage?sslmode=disable"
+    if "DSN" in os.environ:
+        yield os.environ["DSN"]
+    else:
+        yield "postgresql://opencoverage:secret@localhost:5432/opencoverage?sslmode=disable"
 
 
 @pytest.fixture()
