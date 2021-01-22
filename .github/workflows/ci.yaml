@@ -81,6 +81,8 @@ jobs:
           make install
 
       - name: Run tests
+        env:
+          COV_PEM: ${{ secrets.COV_PEM }}
         run: |
           echo $COV_PEM > cov.pem
           source $HOME/.poetry/env
