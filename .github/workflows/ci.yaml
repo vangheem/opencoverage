@@ -123,5 +123,5 @@ jobs:
       - name: Build docker for Frontend
         run: |
           cd app
-          docker build -t opencoverage/frontend:$VERSION
+          docker build . -t opencoverage/frontend:$VERSION
           docker push opencoverage/frontend:$VERSION
