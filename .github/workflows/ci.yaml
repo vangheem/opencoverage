@@ -80,19 +80,15 @@ jobs:
           source $HOME/.poetry/env
           make install
 
-      - name: Run tests
+      - name: Copy github api pem
+        run: 'echo "$COV_PEM" > cov.pem'
+        shell: bash
         env:
-          TEST_SECRET: ${{ secrets.TEST_SECRET }}
-        run: |
-          echo $TEST_SECRET
-          echo "After secret!"
+          COV_PEM: ${{secrets.COV_PEM}}
 
       - name: Run tests
-        env:
-          COV_PEM: ${{ secrets.COV_PEM }}
         run: |
           source $HOME/.poetry/env
-          echo $COV_PEM > cov.pem
           make coverage
 
       - name: Upload coverage to Open Coverage
