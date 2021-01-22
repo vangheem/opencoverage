@@ -26,6 +26,8 @@ services:
       GITHUB_APP_PEM_FILE: /app/cov.pem
       GITHUB_APP_ID: "96444"
       GITHUB_DEFAULT_INSTALLATION_ID: "14109303"
+      ROOT_PATH: /api
+      CORS: '["http://localhost:8080"]'
     volumes:
       - ${PWD}/cov.pem:/app/cov.pem
     depends_on:
@@ -42,8 +44,25 @@ services:
     expose:
       - 3000
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api
     depends_on:
       - api
     links:
       - api
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    ports:
+      - 8080:80
+      - 443:443
+    expose:
+      - 8080
+      - 443
+    depends_on:
+      - api
+      - frontend
+    links:
+      - api
+      - frontend
