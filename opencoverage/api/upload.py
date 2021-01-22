@@ -4,15 +4,20 @@ from typing import Optional
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
+from opencoverage import tasks
 from opencoverage.clients.scm import get_client
-from opencoverage.reporter import CoverageReporter
 
 from .app import router
+import os
 
 
 @router.post("/upload/v4")
 async def upload_coverage_v4(request: Request):
-    upload_url = str(request.url.replace(path="/upload-report"))
+    settings = request.app.settings
+    path = os.path.join(settings.root_path, "upload-report")
+    if path[0] != "/":
+        path = "/" + path
+    upload_url = str(request.url.replace(path=path))
     return PlainTextResponse(f"success {upload_url}")
 
 
@@ -28,7 +33,7 @@ async def upload_report(
 
     organization, _, repo = slug.partition("/")
 
-    if token in ("dummy", "-", ".", "y"):
+    if token in ("dummy", "-", ".", "y", None):
         installation_id = None
     else:
         installation_id = token
@@ -36,13 +41,14 @@ async def upload_report(
     async with get_client(request.app.settings, installation_id) as scm:
         await request.app.db.update_organization(organization, scm.installation_id)
 
-        reporter = CoverageReporter(
-            settings=request.app.settings,
-            db=request.app.db,
-            scm=scm,
+    await request.app.taskrunner.add(
+        name="coveragereport",
+        config=tasks.CoverageTaskConfig(
             organization=organization,
             repo=repo,
             branch=branch,
             commit=commit,
-        )
-        await reporter(coverage_data=data)
+            installation_id=installation_id,
+            data=data,
+        ),
+    )

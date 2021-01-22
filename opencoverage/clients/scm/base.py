@@ -1,6 +1,11 @@
 import abc
 import traceback
-from typing import AsyncIterator, List, Optional, Type
+from typing import (
+    AsyncIterator,
+    List,
+    Optional,
+    Type,
+)
 
 import aiohttp
 
@@ -26,15 +31,21 @@ class SCMClient(abc.ABC):
         return self._session
 
     @abc.abstractmethod
-    async def get_pulls(self, org: str, repo: str, commit_hash: str) -> List[Pull]:
+    async def get_pulls(
+        self, org: str, repo: str, commit_hash: str
+    ) -> List[Pull]:  # pragma: no cover
         ...
 
     @abc.abstractmethod
-    async def get_pull_diff(self, org: str, repo: str, id: int) -> str:
+    async def get_pull_diff(
+        self, org: str, repo: str, id: int
+    ) -> str:  # pragma: no cover
         ...
 
     @abc.abstractmethod
-    async def create_check(self, org: str, repo: str, commit: str) -> str:
+    async def create_check(
+        self, org: str, repo: str, commit: str
+    ) -> str:  # pragma: no cover
         ...
 
     @abc.abstractmethod
@@ -45,17 +56,19 @@ class SCMClient(abc.ABC):
         check_id: str,
         running: bool = False,
         success: bool = False,
-    ) -> None:
+    ) -> None:  # pragma: no cover
         ...
 
     @abc.abstractmethod
-    async def create_comment(self, org: str, repo: str, pull_id: int, text: str) -> str:
+    async def create_comment(
+        self, org: str, repo: str, pull_id: int, text: str
+    ) -> str:  # pragma: no cover
         ...
 
     @abc.abstractmethod
     async def update_comment(
         self, org: str, repo: str, comment_id: str, text: str
-    ) -> None:
+    ) -> None:  # pragma: no cover
         ...
 
     @abc.abstractmethod
@@ -65,6 +78,7 @@ class SCMClient(abc.ABC):
         yield b""
 
     async def __aenter__(self):
+        await self.validate()
         return self
 
     async def __aexit__(
@@ -74,3 +88,6 @@ class SCMClient(abc.ABC):
         exc_traceback: Optional[traceback.StackSummary],
     ):
         await self.close()
+
+    async def validate(self) -> None:  # pragma: no cover
+        ...

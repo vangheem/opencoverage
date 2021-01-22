@@ -61,6 +61,7 @@ All configuration is done with env variables.
 - host
 - port
 - public_url
+- root_path: root path api is served from
 - dsn: connection string for backend database
 - cors: hosts frontend runs on
 - scm: enum(`github`)

@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 import sqlalchemy as sa
 import sqlalchemy.exc
@@ -5,6 +7,7 @@ from async_asgi_testclient import TestClient
 
 from opencoverage import models
 from opencoverage.api.app import HTTPApplication
+from opencoverage.models import Task
 
 
 @pytest.fixture()
@@ -25,6 +28,20 @@ def bootstrap(pg_dsn):
 @pytest.fixture()
 def app(settings, bootstrap):
     yield HTTPApplication(settings)
+
+
+class TasksChecker:
+    def __init__(self, app):
+        self.app = app
+
+    async def wait(self):
+        while await self.app.db.db.query(Task).filter(Task.status != "error").count() > 0:
+            await asyncio.sleep(0.1)
+
+
+@pytest.fixture()
+def tasks(app):
+    yield TasksChecker(app)
 
 
 @pytest.fixture()

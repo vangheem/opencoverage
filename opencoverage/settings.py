@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     port: int = 8000
     timeout_keep_alive: int = 10
     proxy_headers: bool = True
+    root_path: str = ""
 
     public_url: Optional[str] = None
 

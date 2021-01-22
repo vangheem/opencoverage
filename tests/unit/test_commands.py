@@ -1,6 +1,6 @@
+from unittest.mock import Mock, patch
+
 from opencoverage import commands
-from unittest.mock import Mock
-from unittest.mock import patch
 
 
 def test_run_consumer():
@@ -12,11 +12,16 @@ def test_run_consumer():
 
 
 def test_parse_env_vars(monkeypatch):
+    mock_args = Mock()
+    mock_args.env_file = None
+
     monkeypatch.setenv("dsn", "dsn")
     monkeypatch.setenv("scm", "scm")
     with patch("uvicorn.Server.serve") as mocked_server, patch(
         "opencoverage.commands.HTTPApplication"
-    ) as http_app:
+    ) as http_app, patch(
+        "opencoverage.commands.parser.parse_known_args", return_value=(mock_args, None)
+    ):
         commands.run_command()
         mocked_server.assert_called_once()
         settings = http_app.mock_calls[0].args[0]

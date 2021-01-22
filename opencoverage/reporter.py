@@ -6,6 +6,7 @@ from . import types
 from .clients import SCMClient
 from .database import Database
 from .parser import parse_diff, parse_raw_coverage_data
+from .utils import run_async
 
 
 class CoverageReporter:
@@ -33,7 +34,7 @@ class CoverageReporter:
         *,
         coverage_data: bytes,
     ) -> None:
-        coverage = parse_raw_coverage_data(coverage_data)
+        coverage = await run_async(parse_raw_coverage_data, coverage_data)
 
         await self.db.save_coverage(
             organization=self.organization,
@@ -112,7 +113,7 @@ Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self
 
     async def update_pull(self, pull: types.Pull, coverage: types.CoverageData):
         diff = await self.scm.get_pull_diff(self.organization, self.repo, pull.id)
-        diff_data = parse_diff(diff)
+        diff_data = await run_async(parse_diff, diff)
         diff_line_rate = self.get_line_rate(diff_data, coverage)
 
         check_id = await self.scm.create_check(self.organization, self.repo, self.commit)

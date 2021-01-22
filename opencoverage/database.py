@@ -22,6 +22,7 @@ from .models import (
     Organization,
     PullRequest,
     Repo,
+    Task,
 )
 from .settings import Settings
 
@@ -410,3 +411,36 @@ class Database:
                         modification_date=datetime.utcnow(),
                     )
                 )
+
+    async def add_task(self, *, name: str, data: bytes, status: str):
+        await self.db.add(
+            Task(
+                name=name,
+                data=data,
+                status=status,
+                creation_date=datetime.utcnow(),
+                modification_date=datetime.utcnow(),
+            )
+        )
+
+    async def update_task(self, task):
+        task.modification_date = datetime.utcnow()
+        await self.db.update(task)
+
+    async def remove_task(self, task: Task):
+        await self.db.delete(task)
+
+    async def get_task(self) -> Optional[Task]:
+        try:
+            return (
+                await self.db.query(
+                    Task,
+                )
+                .filter(Task.status != "error")
+                .order_by(Task.creation_date)
+                .limit(1)
+                .with_for_update(skip_locked=True)
+                .one()
+            )
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None

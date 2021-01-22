@@ -187,6 +187,19 @@ class CoverageReportPullRequest(Base):  # type: ignore
     )
 
 
+class Task(Base):  # type: ignore
+    __tablename__ = "tasks"
+
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
+    name = sa.Column(sa.String)
+    data = sa.Column(sa.LargeBinary)
+    status = sa.Column(sa.String, index=True)
+    info = sa.Column(sa.String)
+
+    creation_date = sa.Column(sa.DateTime, index=True)
+    modification_date = sa.Column(sa.DateTime, index=True)
+
+
 MODELS = (
     Organization,
     Repo,
@@ -196,6 +209,7 @@ MODELS = (
     CoverageReport,
     CoverageRecord,
     CoverageReportPullRequest,
+    Task,
 )
 
 

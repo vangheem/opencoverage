@@ -1,7 +1,7 @@
 import argparse
-import dotenv
 import asyncio
 
+import dotenv
 import uvicorn
 
 from opencoverage.api.app import HTTPApplication
@@ -33,6 +33,7 @@ async def _run():
         host=settings.host,
         timeout_keep_alive=settings.timeout_keep_alive,
         proxy_headers=settings.proxy_headers,
+        root_path=settings.root_path,
         log_config=None,
     )
     server = uvicorn.Server(config=configuration)

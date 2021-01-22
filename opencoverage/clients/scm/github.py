@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import (
     Any,
     AsyncIterator,
@@ -93,18 +93,18 @@ class GithubApp(pydantic.BaseModel):
 class GithubCheck(pydantic.BaseModel):
     id: int
     head_sha: str
-    node_id: str
-    external_id: str
-    url: str
-    html_url: str
-    details_url: str
+    node_id: Optional[str]
+    external_id: Optional[str]
+    url: Optional[str]
+    html_url: Optional[str]
+    details_url: Optional[str]
     status: str
     conclusion: Optional[str]
     started_at: datetime
     completed_at: Optional[datetime]
     name: str
 
-    app: GithubApp
+    app: Optional[GithubApp]
 
 
 class GithubChecks(pydantic.BaseModel):
@@ -122,7 +122,7 @@ class GithubAccessData(pydantic.BaseModel):
 class GithubComment(pydantic.BaseModel):
     id: int
     body: str
-    user: GithubUser
+    user: Optional[GithubUser]
 
 
 GITHUB_API_URL = "https://api.github.com"
@@ -136,6 +136,7 @@ class Token(pydantic.BaseModel):
 
 # this should
 _token_cache: Dict[str, Token] = {}
+_private_key_cache = {}
 
 
 class Github(SCMClient):
@@ -146,8 +147,12 @@ class Github(SCMClient):
         )
         if settings.github_app_pem_file is None:
             raise TypeError("Must configure github_app_pem_file")
-        with open(settings.github_app_pem_file, "rb") as fi:
-            self._private_key = default_backend().load_pem_private_key(fi.read(), None)
+        if settings.github_app_pem_file not in _private_key_cache:
+            with open(settings.github_app_pem_file, "rb") as fi:
+                _private_key_cache[
+                    settings.github_app_pem_file
+                ] = default_backend().load_pem_private_key(fi.read(), None)
+        self._private_key = _private_key_cache[settings.github_app_pem_file]
 
     def _get_jwt_token(self) -> str:
         time_since_epoch_in_seconds = int(time.time())
@@ -155,7 +160,7 @@ class Github(SCMClient):
         if token_data is None or token_data.jwt_expiration < (
             time_since_epoch_in_seconds - 10
         ):
-            jwt_expiration = time_since_epoch_in_seconds + (10 * 60)
+            jwt_expiration = time_since_epoch_in_seconds + (2 * 60)
             _token_cache[self.installation_id] = Token(
                 jwt_expiration=jwt_expiration,
                 jwt_token=jwt.encode(
@@ -173,14 +178,14 @@ class Github(SCMClient):
             )
         return _token_cache[self.installation_id].jwt_token
 
-    async def _get_access_token(self) -> str:
+    async def get_access_token(self) -> str:
         token_data = _token_cache.get(self.installation_id)
 
         now = datetime.utcnow().replace(tzinfo=timezone.utc)
         if (
             token_data is None
             or token_data.access_data is None
-            or token_data.access_data.expires_at > now
+            or token_data.access_data.expires_at < (now - timedelta(minutes=2))
         ):
             url = (
                 f"{GITHUB_API_URL}/app/installations/{self.installation_id}/access_tokens"
@@ -215,11 +220,14 @@ class Github(SCMClient):
         json: Optional[Dict[str, Any]] = None,
     ):
         func = getattr(self.session, method.lower())
-        if headers is None:
-            headers = {}
-        token = await self._get_access_token()
+        headers = headers or {}
+        token = await self.get_access_token()
         headers["Authorization"] = f"token {token}"
         return func(url, headers=headers, params=params or {}, json=json)
+
+    async def validate(self) -> None:
+        # getting a valid access token is all we need here
+        await self.get_access_token()
 
     async def get_pulls(self, org: str, repo: str, commit_hash: str) -> List[Pull]:
         url = f"{GITHUB_API_URL}/repos/{org}/{repo}/commits/{commit_hash}/pulls"

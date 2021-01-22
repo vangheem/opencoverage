@@ -1,7 +1,9 @@
 from unittest.mock import Mock, patch
-from opencoverage import parser
-from lxml import etree
+
 import pytest
+from lxml import etree
+
+from opencoverage import parser
 
 
 def test_get_el_raises_parsing_exception():

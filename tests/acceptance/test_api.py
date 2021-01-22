@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 def scm_app(scm):
     with patch("opencoverage.api.api.get_client", return_value=scm), patch(
         "opencoverage.api.upload.get_client", return_value=scm
-    ):
+    ), patch("opencoverage.tasks.get_client", return_value=scm):
         yield
 
 
@@ -26,7 +26,7 @@ async def test_upload(http_client, scm):
     assert resp.status_code == 200
 
 
-async def test_upload_against_pr(http_client, scm):
+async def test_upload_against_pr(http_client, scm, tasks):
     scm.get_pulls.return_value = [types.Pull(head="test-changes", base="master", id="1")]
     scm.get_pull_diff.return_value = """diff --git a/guillotina/addons.py b/guillotina/addons.py
 index 8ad9304b..de0e1d25 100644
@@ -55,6 +55,8 @@ index 8ad9304b..de0e1d25 100644
         data=read_data("guillotina.pr"),
     )
     assert resp.status_code == 200
+
+    await tasks.wait()
 
     resp = await http_client.get("/vangheem/repos/guillotina/pulls")
     assert resp.status_code == 200
