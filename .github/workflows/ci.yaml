@@ -23,6 +23,7 @@ jobs:
       - name: Install package
         run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
+          source $HOME/.poetry/env
           make install
       - name: Run pre-checks
         run: |
@@ -66,6 +67,7 @@ jobs:
       - name: Install the package
         run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
+          source $HOME/.poetry/env
           make install
 
       - name: Run tests
