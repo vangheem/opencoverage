@@ -1,16 +1,17 @@
-from datetime import timedelta, datetime, timezone
+import os
+from datetime import datetime, timedelta, timezone
 from unittest.mock import (
     ANY,
     AsyncMock,
-    Mock,
     MagicMock,
+    Mock,
     patch,
 )
+
 import pytest
 
-from tests import utils
-import os
 from opencoverage.clients import scm
+from tests import utils
 
 pytestmark = pytest.mark.asyncio
 

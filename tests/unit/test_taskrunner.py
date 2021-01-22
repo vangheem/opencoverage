@@ -1,9 +1,17 @@
-import pydantic
 import asyncio
 import pickle
-from unittest.mock import AsyncMock, Mock, patch, MagicMock, ANY
-from opencoverage import taskrunner, tasks
+from unittest.mock import (
+    ANY,
+    AsyncMock,
+    MagicMock,
+    Mock,
+    patch,
+)
+
+import pydantic
 import pytest
+
+from opencoverage import taskrunner, tasks
 
 pytestmark = pytest.mark.asyncio
 

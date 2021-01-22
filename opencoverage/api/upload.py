@@ -1,3 +1,4 @@
+import os
 import zlib
 from typing import Optional
 
@@ -8,7 +9,6 @@ from opencoverage import tasks
 from opencoverage.clients.scm import get_client
 
 from .app import router
-import os
 
 
 @router.post("/upload/v4")

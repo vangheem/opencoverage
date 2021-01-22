@@ -1,6 +1,7 @@
 from typing import Optional
 
 from opencoverage.settings import Settings
+
 from . import github  # noqa
 from .base import SCMClient
 from .github import Github

@@ -5,6 +5,7 @@ from unittest.mock import (
     Mock,
     patch,
 )
+
 import pytest
 from starlette.datastructures import URL
 
