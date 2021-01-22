@@ -114,7 +114,7 @@ jobs:
 
       - name: Get version
         # run: awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml >> $VERSION
-        run: echo "VERSION=$(awk '/^version =/{gsub(/\"/,\"\",$3);print $3}' pyproject.toml)" >> $GITHUB_ENV
+        run: echo "VERSION=$(awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml)" >> $GITHUB_ENV
 
       - name: Build docker for API
         run: |
