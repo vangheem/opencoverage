@@ -75,7 +75,7 @@ jobs:
         run: |
           echo $COV_PEM > cov.pem
           source $HOME/.poetry/env
-          pytest -rfE --reruns 2 --cov=opencoverage -s --tb=native -v --cov-report xml
+          make coverage
 
       - name: Upload coverage to Open Coverage
         uses: codecov/codecov-action@v1
