@@ -4,6 +4,7 @@ bin
 .pytest-cache
 .vscode
 cov.pem
+cov2.pem
 coverage.xml
 .env.dev
 htmlcov

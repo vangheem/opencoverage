@@ -62,8 +62,8 @@ jobs:
       DSN: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
       SCM: github
       GITHUB_APP_PEM_FILE: "cov.pem"
-      GITHUB_APP_ID: "96444"
-      GITHUB_DEFAULT_INSTALLATION_ID: "14109303"
+      GITHUB_APP_ID: "97375"
+      GITHUB_DEFAULT_INSTALLATION_ID: "14245515"
 
     steps:
       - name: Checkout the repository
