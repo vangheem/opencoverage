@@ -82,10 +82,14 @@ jobs:
 
       - name: Run tests
         env:
-          COV_PEM: ${{ secrets.COV_PEM }}
           TEST_SECRET: ${{ secrets.TEST_SECRET }}
         run: |
           echo $TEST_SECRET
+
+      - name: Run tests
+        env:
+          COV_PEM: ${{ secrets.COV_PEM }}
+        run: |
           source $HOME/.poetry/env
           echo $COV_PEM > cov.pem
           make coverage
