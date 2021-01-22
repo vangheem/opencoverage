@@ -92,9 +92,6 @@ jobs:
           make coverage
 
       - name: Upload coverage to Open Coverage
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage.xml
-          token: "14109303"
-          slug: vangheem/opencoverage
-          url: https://open-coverage.org/api
+        run: |
+          source $HOME/.poetry/env
+          poetry run codecov --url="https://open-coverage.org/api" --token=14109303 --slug=vangheem/opencoverage
