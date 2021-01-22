@@ -64,7 +64,7 @@ class CoverageReporter:
 ## Coverage Report
 
 Overall coverage: *{coverage["line_rate"]}%*
-Coverage report: {self.settings.public_url}/report/{self.organization}/{self.repo}/{self.branch}/{self.commit}
+Coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report
 
 
 ```diff
@@ -76,7 +76,7 @@ Coverage report: {self.settings.public_url}/report/{self.organization}/{self.rep
 - Misses      {misses}
 
 ```
-Diff coverage report: {self.settings.public_url}/report/{self.organization}/{self.repo}/{self.branch}/{self.commit}/{pull.id}
+Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report
 """  # noqa
 
     def get_line_rate(
