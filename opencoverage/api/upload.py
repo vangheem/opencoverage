@@ -28,21 +28,21 @@ async def upload_report(
 
     organization, _, repo = slug.partition("/")
 
-    if token == "dummy":
+    if token in ("dummy", "-", ".", "y"):
         installation_id = None
     else:
         installation_id = token
 
-    scm = get_client(request.app.settings, installation_id)
-    await request.app.db.update_organization(organization, scm.installation_id)
+    async with get_client(request.app.settings, installation_id) as scm:
+        await request.app.db.update_organization(organization, scm.installation_id)
 
-    reporter = CoverageReporter(
-        settings=request.app.settings,
-        db=request.app.db,
-        scm=scm,
-        organization=organization,
-        repo=repo,
-        branch=branch,
-        commit=commit,
-    )
-    await reporter(coverage_data=data)
+        reporter = CoverageReporter(
+            settings=request.app.settings,
+            db=request.app.db,
+            scm=scm,
+            organization=organization,
+            repo=repo,
+            branch=branch,
+            commit=commit,
+        )
+        await reporter(coverage_data=data)

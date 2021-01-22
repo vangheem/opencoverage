@@ -46,6 +46,8 @@ def _format_report(report):
 async def get_report(org: str, repo: str, commit: str, request: Request):
     db = request.app.db
     report = await db.get_report(org, repo, commit)
+    if report is None:
+        return JSONResponse({}, status_code=404)
     return _format_report(report)
 
 
@@ -171,5 +173,5 @@ async def download_file(
     org: str, repo: str, commit: str, request: Request, filename: str
 ):
     organization = await request.app.db.get_organization(org)
-    scm = get_client(request.app.settings, organization.installation_id)
-    return StreamingResponse(scm.download_file(org, repo, commit, filename))
+    async with get_client(request.app.settings, organization.installation_id) as scm:
+        return StreamingResponse(scm.download_file(org, repo, commit, filename))

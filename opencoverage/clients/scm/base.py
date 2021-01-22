@@ -1,5 +1,6 @@
 import abc
-from typing import AsyncIterator, List, Optional
+import traceback
+from typing import AsyncIterator, List, Optional, Type
 
 import aiohttp
 
@@ -62,3 +63,14 @@ class SCMClient(abc.ABC):
         self, org: str, repo: str, commit: str, filename: str
     ) -> AsyncIterator[bytes]:  # pragma: no cover
         yield b""
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[Exception]],
+        exc_value: Optional[Exception],
+        exc_traceback: Optional[traceback.StackSummary],
+    ):
+        await self.close()

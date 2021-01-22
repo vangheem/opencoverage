@@ -44,7 +44,7 @@ class Database:
         if self.db.is_connected:
             try:
                 await self.db.disconnect()
-            except RuntimeError:
+            except RuntimeError:  # pragma: no cover
                 # loop closing
                 ...
 

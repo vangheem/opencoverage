@@ -1,4 +1,5 @@
 import argparse
+import dotenv
 import asyncio
 
 import uvicorn
@@ -22,8 +23,6 @@ def run_command():
 async def _run():
     arguments, _ = parser.parse_known_args()
     if arguments.env_file:
-        import dotenv
-
         dotenv.load_dotenv(arguments.env_file)
 
     settings = Settings()
