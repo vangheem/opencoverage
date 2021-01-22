@@ -27,6 +27,7 @@ jobs:
           make install
       - name: Run pre-checks
         run: |
+          source $HOME/.poetry/env
           make lint
           make mypy
   # Job to run tests
@@ -73,6 +74,7 @@ jobs:
       - name: Run tests
         run: |
           echo $COV_PEM > cov.pem
+          source $HOME/.poetry/env
           pytest -rfE --reruns 2 --cov=opencoverage -s --tb=native -v --cov-report xml
 
       - name: Upload coverage to Open Coverage
