@@ -113,7 +113,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Get version
-        run: export VERSION=$(awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml)
+        # run: awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml >> $VERSION
+        run: echo "VERSION=$(awk '/^version =/{gsub(/\"/,\"\",$3);print $3}' pyproject.toml)" >> $GITHUB_ENV
 
       - name: Build docker for API
         run: |
