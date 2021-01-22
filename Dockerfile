@@ -21,5 +21,4 @@ RUN make install
 
 EXPOSE 5000
 
-RUN mkdir /conf
 CMD ["make", "run"]

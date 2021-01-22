@@ -1,0 +1,10 @@
+app
+lib
+bin
+.pytest-cache
+.vscode
+cov.pem
+coverage.xml
+.env.dev
+htmlcov
+conf

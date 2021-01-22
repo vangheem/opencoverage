@@ -1,9 +1,0 @@
-docker-context: "."
-dependencies:
-  - modules/utils
-  - modules/types
-  - modules/metrics
-  - modules/access
-  - modules/files
-  - modules/gql
-  - modules/logging
