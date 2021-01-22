@@ -1,0 +1,82 @@
+name: guillotina
+
+on: [push]
+
+jobs:
+
+  # Job to run pre-checks
+  pre-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
+          make install
+      - name: Run pre-checks
+        run: |
+          make lint
+          make mypy
+  # Job to run tests
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+
+    strategy:
+      matrix:
+        python-version: [3.8]
+        database: ["postgres"]
+
+    # Set environment variables
+    env:
+      DSN: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+      SCM: github
+      GITHUB_APP_PEM_FILE: "cov.pem"
+      GITHUB_APP_ID: "96444"
+      GITHUB_DEFAULT_INSTALLATION_ID: "14109303"
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the package
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
+          make install
+
+      - name: Run tests
+        run: |
+          echo $COV_PEM > cov.pem
+          pytest -rfE --reruns 2 --cov=opencoverage -s --tb=native -v --cov-report xml
+
+      - name: Upload coverage to Open Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          token: "14109303"
+          slug: vangheem/opencoverage
+          url: https://open-coverage.org/api
