@@ -51,9 +51,9 @@ services:
       - api
 
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile-nginx
+    image: nginx:1.19.6
+    volumes:
+      - ${PWD}/conf/nginx-templates:/etc/nginx/templates
     ports:
       - 8080:80
       - 443:443
