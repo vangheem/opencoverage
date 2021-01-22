@@ -97,7 +97,7 @@ jobs:
           poetry run codecov --url="https://open-coverage.org/api" --token=14109303 --slug=vangheem/opencoverage
 
   build-docker:
-    if: ${{ github.ref == 'master' }}
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     needs:
       - pre-checks
