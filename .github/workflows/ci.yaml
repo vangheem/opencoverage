@@ -113,7 +113,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Get version
-        # run: awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml >> $VERSION
         run: echo "VERSION=$(awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml)" >> $GITHUB_ENV
 
       - name: Build docker for API
@@ -124,5 +123,5 @@ jobs:
       - name: Build docker for Frontend
         run: |
           cd app
-          docker build Dockerfile -t opencoverage/frontend:$VERSION
+          docker build -t opencoverage/frontend:$VERSION
           docker push opencoverage/frontend:$VERSION
