@@ -1,7 +1,7 @@
 version: "2"
 services:
   postgres:
-    image: gcr.io/atlas-images/postgres:12
+    image: postgres:12
     ports:
       - 5432:5432
     expose:
@@ -12,3 +12,38 @@ services:
       POSTGRES_INITDB_ARGS: --data-checksums
       POSTGRES_DB: opencoverage
 
+  api:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    environment:
+      PUBLIC_URL: https://open-coverage.org
+      DSN: postgresql://opencoverage:secret@postgres:5432/opencoverage?sslmode=disable
+      SCM: github
+      GITHUB_APP_PEM_FILE: /app/cov.pem
+      GITHUB_APP_ID: "96444"
+      GITHUB_DEFAULT_INSTALLATION_ID: "14109303"
+    volumes:
+      - ${PWD}/cov.pem:/app/cov.pem
+    depends_on:
+      - postgres
+    links:
+      - postgres
+
+  frontend:
+    build:
+      context: app
+      # dockerfile: app/Dockerfile
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
+    links:
+      - api
