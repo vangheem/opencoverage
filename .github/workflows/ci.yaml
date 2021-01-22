@@ -85,6 +85,7 @@ jobs:
           TEST_SECRET: ${{ secrets.TEST_SECRET }}
         run: |
           echo $TEST_SECRET
+          echo "After secret!"
 
       - name: Run tests
         env:
