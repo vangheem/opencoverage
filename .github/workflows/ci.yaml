@@ -94,7 +94,7 @@ jobs:
       - name: Upload coverage to Open Coverage
         run: |
           source $HOME/.poetry/env
-          poetry run codecov --url="https://open-coverage.org/api" --token=14109303 --slug=vangheem/opencoverage
+          poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml
 
   build-docker:
     if: ${{ github.ref == 'refs/heads/master' }}
