@@ -6,4 +6,4 @@ COPY ./ ./
 RUN yarn install
 RUN yarn build
 
-CMD ["yarn", "build", "&&", "yarn", "start", "--hostname", "0.0.0.0"]
+CMD ["bash", "-c", "yarn build && yarn start --hostname 0.0.0.0"]
