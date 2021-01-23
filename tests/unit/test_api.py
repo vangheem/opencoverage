@@ -9,7 +9,7 @@ from unittest.mock import (
 import pytest
 from starlette.datastructures import URL
 
-from opencoverage.api import upload
+from opencoverage.api import badge, upload
 
 pytestmark = pytest.mark.asyncio
 
@@ -100,3 +100,25 @@ class TestUploadReport:
         config.commit == "commit"
         config.organization == "org"
         config.data == b"data"
+
+
+async def test_get_badge(req, db):
+    report = Mock()
+    report.line_rate = 0.888123
+    db.get_reports.return_value = (None, [report])
+    resp = await badge.get_badge(req, "org", "repo")
+    body = resp.body.decode()
+    assert "88.8%" in body
+    assert badge.Colors.GT_85 in body
+
+    report.line_rate = 0.518123
+    resp = await badge.get_badge(req, "org", "repo")
+    body = resp.body.decode()
+    assert "51.8%" in body
+    assert badge.Colors.GT_50 in body
+
+
+async def test_get_badge_missing(req, db):
+    db.get_reports.return_value = (None, [])
+    resp = await badge.get_badge(req, "org", "repo")
+    assert resp.status_code == 404
