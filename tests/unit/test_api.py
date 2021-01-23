@@ -108,13 +108,13 @@ async def test_get_badge(req, db):
     db.get_reports.return_value = (None, [report])
     resp = await badge.get_badge(req, "org", "repo")
     body = resp.body.decode()
-    assert "88.8%" in body
+    assert "89%" in body
     assert badge.Colors.GT_85 in body
 
     report.line_rate = 0.518123
     resp = await badge.get_badge(req, "org", "repo")
     body = resp.body.decode()
-    assert "51.8%" in body
+    assert "52%" in body
     assert badge.Colors.GT_50 in body
 
 
