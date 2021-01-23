@@ -299,6 +299,9 @@ class Database:
             Branch, name=pull.base, organization=organization, repo=repo
         )
         await self._ensure_ob(
+            Branch, name=pull.head, organization=organization, repo=repo
+        )
+        await self._ensure_ob(
             PullRequest,
             organization=organization,
             repo=repo,
