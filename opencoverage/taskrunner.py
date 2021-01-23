@@ -81,22 +81,28 @@ class TaskRunner:
                 await asyncio.sleep(1)
 
     async def _run_tasks(self) -> None:
-        async with self.db.db.transaction():
-            task = await self.db.get_task()
-            if task is None:
-                return
-            logger.info(f"Running task: {task.name}: {task.id}")
-            try:
+        error = False
+        task = None
+        try:
+            async with self.db.db.transaction():
+                task = await self.db.get_task()
+                if task is None:
+                    return
+                logger.info(f"Running task: {task.name}: {task.id}")
                 await self.run_task(task)
                 await self.db.remove_task(task)
-            except Exception:
-                logger.exception(f"Error running task: {task.name}: {task.id}")
-                task.status = "error"
-                task.info = traceback.format_exc()
-                # remove old bad data that caused the error?
-                await self.db.update_task(task)
-            else:
-                logger.info(f"Finished task: {task.name}: {task.id}")
+        except Exception:
+            error = True
+            logger.exception("Error running task")
+        else:
+            logger.info(f"Finished task: {task.name}: {task.id}")
+        if error and task is not None:
+            logger.error(f"Marking task in error: {task.name}: {task.id}")
+            # on error, put task in error status
+            task.status = "error"
+            task.info = traceback.format_exc()
+            # remove old bad data that caused the error?
+            await self.db.update_task(task)
 
     async def run_task(self, task: Task) -> None:
         func, _ = _registered[task.name]
