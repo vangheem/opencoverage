@@ -111,3 +111,11 @@ async def test_get_file(http_client, app):
         query_string={"filename": "foobar.py"},
     )
     assert resp.status_code == 404
+
+
+async def test_get_badge(http_client, app):
+    await add_coverage(app.db, "plone", "guillotina", "master", "123", "guillotina.cov")
+    await add_coverage(app.db, "plone", "guillotina", "master", "1234", "guillotina.cov")
+    resp = await http_client.get("/plone/repos/guillotina/badge.svg")
+    assert resp.status_code == 200
+    assert "<svg" in resp.content.decode()
