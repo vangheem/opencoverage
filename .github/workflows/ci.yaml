@@ -1,4 +1,4 @@
-name: guillotina
+name: opencoverage
 
 on: [push]
 
@@ -118,10 +118,14 @@ jobs:
       - name: Build docker for API
         run: |
           docker build . -t opencoverage/api:$VERSION
+          docker tag opencoverage/api:$VERSION opencoverage/api:latest
           docker push opencoverage/api:$VERSION
+          docker push opencoverage/api:latest
 
       - name: Build docker for Frontend
         run: |
           cd app
           docker build . -t opencoverage/frontend:$VERSION
+          docker tag opencoverage/frontend:$VERSION opencoverage/frontend:latest
           docker push opencoverage/frontend:$VERSION
+          docker push opencoverage/frontend:latest

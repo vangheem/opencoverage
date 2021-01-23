@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from opencoverage.settings import Settings
 
@@ -71,7 +71,7 @@ Coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo
 ```diff
 @@           Coverage Diff            @@
 ========================================
-- Coverage    {diff_line_rate}%
+- Coverage    {(diff_line_rate * 100):.1f}%
 ========================================
 + Hits        {hits}
 - Misses      {misses}
@@ -82,39 +82,40 @@ Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self
 
     def get_line_rate(
         self, diff_data: List[types.DiffCoverage], coverage: types.CoverageData
-    ) -> float:
+    ) -> Tuple[List[types.DiffCoverage], float]:
         total = 0
         covered = 0
+        covered_diff_data = []
         for ddata in diff_data:
             try:
                 lines = coverage["file_coverage"][ddata["filename"]]["lines"]
             except KeyError:
-                ddata["line_rate"] = 0.0
-                ddata["hits"] = 0
-                ddata["misses"] = len(ddata["lines"])
-                total += len(ddata["lines"])
+                # if it isn't in the file coverage report, we don't care about it
                 continue
 
-            file_total = len(ddata["lines"])
+            file_total = 0
             file_covered = 0
             ddata["hits"] = ddata["misses"] = 0
-            for lnum in ddata["lines"]:
-                if lines.get(lnum, 0):
-                    file_covered += 1
-                    ddata["hits"] += 1
-                else:
-                    ddata["misses"] += 1
+            for line_no, hits in lines.items():
+                if line_no in ddata["lines"]:
+                    file_total += 1
+                    if hits:
+                        file_covered += 1
+                        ddata["hits"] += 1
+                    else:
+                        ddata["misses"] += 1
 
             ddata["line_rate"] = file_covered / file_total
             total += file_total
             covered += file_covered
+            covered_diff_data.append(ddata)
 
-        return covered / total
+        return covered_diff_data, covered / total
 
     async def update_pull(self, pull: types.Pull, coverage: types.CoverageData):
         diff = await self.scm.get_pull_diff(self.organization, self.repo, pull.id)
         diff_data = await run_async(parse_diff, diff)
-        diff_line_rate = self.get_line_rate(diff_data, coverage)
+        diff_data, diff_line_rate = self.get_line_rate(diff_data, coverage)
 
         check_id = await self.scm.create_check(self.organization, self.repo, self.commit)
 

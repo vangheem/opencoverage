@@ -1,5 +1,7 @@
 # Open Coverage
 
+[![opencoverage](https://open-coverage.org/api/vangheem/repos/opencoverage/badge.svg)](https://open-coverage.org/vangheem/repos/opencoverage)
+
 Free and open alternative providing coverage reporting and diff coverage reporting.
 
 The project can be a simple replacement for codecov or coveralls for teams working
@@ -24,6 +26,24 @@ SCM integrations:
 
 - [x] github
 - [ ] bitbucket
+
+## Configuration
+
+To run the server yourself, you need to create a github application and install
+it for your organization.
+
+All configuration is done with env variables.
+
+- host
+- port
+- public_url
+- root_path: root path api is served from
+- dsn: connection string for backend database
+- cors: hosts frontend runs on
+- scm: enum(`github`)
+- github_app_id: id of app
+- github_app_pem_file: pem file for application you created
+- github_default_installation_id: id of org this app is installed on
 
 ## Backend development
 
@@ -51,23 +71,9 @@ Run:
 make run
 ```
 
-## Configuration
+## Frontend development
 
-To run the server yourself, you need to create a github application and install
-it for your organization.
-
-All configuration is done with env variables.
-
-- host
-- port
-- public_url
-- root_path: root path api is served from
-- dsn: connection string for backend database
-- cors: hosts frontend runs on
-- scm: enum(`github`)
-- github_app_id: id of app
-- github_app_pem_file: pem file for application you created
-- github_default_installation_id: id of org this app is installed on
+This project uses nextjs. See the `app` directory for details.
 
 ## Send report from CI
 
@@ -78,5 +84,5 @@ or `dummy` if you are using the `github_default_installation_id` setting
 and only using the server for a single org.
 
 ```
-codecov --url="http://<installed-host>:8000/api" --token=<github installation id> --slug=vangheem/guillotina
+codecov --url="http://<installed-host>:8000/api" --token=<github installation id> --slug=vangheem/opencoverage
 ```

@@ -82,7 +82,7 @@ class Database:
         results = await query.all()
         cursor = None
         if len(results) == limit:
-            cursor = results[-1].name
+            cursor = getattr(results[-1], cursor_type.key)
         return cursor, results
 
     async def get_repos(
