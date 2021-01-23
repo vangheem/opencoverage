@@ -30,7 +30,7 @@ async def upload_report(
     request: Request, branch: str, commit: str, slug: str, token: Optional[str] = None
 ):
     data = await request.body()
-    logger.info(f"Upload body {len(data)}")
+    logger.info(f"Upload body {len(data)}: {request.headers}")
 
     if request.headers.get("content-type") == "application/x-gzip":
         gzip_worker = zlib.decompressobj(zlib.MAX_WBITS | 16)
