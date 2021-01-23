@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opencoverage"
-version = "0.0.5"
+version = "0.0.6"
 description = ""
 authors = ["vangheem"]
 license = "MIT"
