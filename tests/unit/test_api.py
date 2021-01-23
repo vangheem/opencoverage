@@ -47,11 +47,24 @@ async def test_upload_v4(settings):
     request = Mock()
     settings = Mock()
     request.url = URL("http://foobar.com?foo=bar")
+    request.headers = {}
     settings.root_path = "root_path"
     request.app.settings = settings
     resp = await upload.upload_coverage_v4(request)
     _, _, url = resp.body.decode().partition(" ")
     assert url == "http://foobar.com/root_path/upload-report?foo=bar"
+
+
+async def test_upload_v4_https(settings):
+    request = Mock()
+    settings = Mock()
+    request.url = URL("http://foobar.com?foo=bar")
+    request.headers = {"x-scheme": "https"}
+    settings.root_path = "root_path"
+    request.app.settings = settings
+    resp = await upload.upload_coverage_v4(request)
+    _, _, url = resp.body.decode().partition(" ")
+    assert url == "https://foobar.com/root_path/upload-report?foo=bar"
 
 
 class TestUploadReport:

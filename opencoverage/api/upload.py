@@ -21,6 +21,12 @@ async def upload_coverage_v4(request: Request):
     if path[0] != "/":
         path = "/" + path
     upload_url = str(request.url.replace(path=path))
+    scheme = request.headers.get(
+        "x-scheme", request.headers.get("x-forwarded-proto", "http")
+    )
+    if not upload_url.startswith(f"{scheme}://"):
+        _, _, url_part = upload_url.partition("://")
+        upload_url = f"{scheme}://{url_part}"
     logger.info(f"Redirecting to {upload_url}")
     return PlainTextResponse(f"success {upload_url}")
 
