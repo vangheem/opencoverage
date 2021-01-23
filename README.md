@@ -84,5 +84,5 @@ or `dummy` if you are using the `github_default_installation_id` setting
 and only using the server for a single org.
 
 ```
-codecov --url="http://<installed-host>:8000/api" --token=<github installation id> --slug=vangheem/guillotina
+codecov --url="http://<installed-host>:8000/api" --token=<github installation id> --slug=vangheem/opencoverage
 ```

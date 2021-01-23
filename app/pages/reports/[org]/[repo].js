@@ -6,7 +6,7 @@ const fetcher = url => fetch(url).then(r => r.json())
 // This function gets called at build time
 // export async function getStaticPaths () {
 //   // nothing static here
-//   return { paths: ['/reports/plone/guillotina'], fallback: true }
+//   return { paths: ['/reports/vangheem/opencoverage'], fallback: true }
 // }
 
 function Reports ({ params }) {

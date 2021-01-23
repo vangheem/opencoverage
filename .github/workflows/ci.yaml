@@ -1,4 +1,4 @@
-name: guillotina
+name: opencoverage
 
 on: [push]
 
