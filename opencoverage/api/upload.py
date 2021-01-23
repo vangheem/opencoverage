@@ -1,3 +1,4 @@
+import logging
 import os
 import zlib
 from typing import Optional
@@ -10,6 +11,8 @@ from opencoverage.clients.scm import get_client
 
 from .app import router
 
+logger = logging.getLogger(__name__)
+
 
 @router.post("/upload/v4")
 async def upload_coverage_v4(request: Request):
@@ -18,6 +21,7 @@ async def upload_coverage_v4(request: Request):
     if path[0] != "/":
         path = "/" + path
     upload_url = str(request.url.replace(path=path))
+    logger.info(f"Redirecting to {upload_url}")
     return PlainTextResponse(f"success {upload_url}")
 
 
@@ -26,10 +30,12 @@ async def upload_report(
     request: Request, branch: str, commit: str, slug: str, token: Optional[str] = None
 ):
     data = await request.body()
+    logger.info(f"Upload body {len(data)}")
 
     if request.headers.get("content-type") == "application/x-gzip":
         gzip_worker = zlib.decompressobj(zlib.MAX_WBITS | 16)
         data = gzip_worker.decompress(data) + gzip_worker.flush()
+        logger.info(f"decompressed gzip data {len(data)}")
 
     organization, _, repo = slug.partition("/")
 
@@ -52,3 +58,4 @@ async def upload_report(
             data=data,
         ),
     )
+    logger.info("Task scheduled")

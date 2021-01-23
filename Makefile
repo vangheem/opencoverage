@@ -4,13 +4,13 @@ install:
 	$(POETRY) install 
 
 format:
-	$(POETRY) run isort .
-	$(POETRY) run black .
+	$(POETRY) run isort opencoverage tests
+	$(POETRY) run black opencoverage tests
 
 lint:
-	$(POETRY) run isort --check-only .
-	$(POETRY) run black --check .
-	$(POETRY) run flake8 --config setup.cfg
+	$(POETRY) run isort --check-only opencoverage tests
+	$(POETRY) run black --check opencoverage tests
+	$(POETRY) run flake8 --config setup.cfg opencoverage tests
 
 mypy:
 	$(POETRY) run mypy -p opencoverage
@@ -28,7 +28,7 @@ coverage-dev:
 	$(POETRY) run pytest -v tests -s --tb=native -v --cov=opencoverage --cov-report xml --env=.env.dev
 
 send-codecov:
-	$(POETRY) run codecov --url="http://localhost:8000" --token=foobar --slug=vangheem/opencoverage
+	$(POETRY) run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml
 
 run:
 	$(POETRY) run opencoverage

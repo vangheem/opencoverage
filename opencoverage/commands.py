@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 
 import dotenv
 import uvicorn
@@ -21,6 +22,8 @@ def run_command():
 
 
 async def _run():
+    logging.basicConfig(level=logging.INFO)
+
     arguments, _ = parser.parse_known_args()
     if arguments.env_file:
         dotenv.load_dotenv(arguments.env_file)
