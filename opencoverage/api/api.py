@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi.responses import StreamingResponse
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from opencoverage import types
 from opencoverage.clients.scm import get_client
 
 from .app import router
@@ -63,7 +64,7 @@ async def get_recent_reports(
     return {"cursor": cursor, "result": result}
 
 
-def _format_pr_report(report):
+def _format_pr_report(report: types.PRReportResult) -> Dict[str, Any]:
     return {
         "__type": "CoverageReportPullRequest",
         "organization": report["coveragereportpullrequests_organization"],

@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -16,6 +17,7 @@ def raw():
     db.filter = MagicMock(return_value=db)
     db.order_by = MagicMock(return_value=db)
     db.limit = MagicMock(return_value=db)
+    db.outerjoin = MagicMock(return_value=db)
 
     txn = AsyncMock()
     db.transaction = MagicMock(return_value=txn)
@@ -173,3 +175,58 @@ class TestTasks:
         await db.update_task(task)
         assert task.modification_date
         raw.update.assert_called_with(task)
+
+
+class TestGetPRReports:
+    async def test_get_pr_reports(self, db, raw):
+        result = {}
+        raw.all.return_value = [result]
+        cursor, results = await db.get_pr_reports(
+            organization="organization",
+            repo="repo",
+            pull=1,
+            commit="commit",
+            limit=10,
+            cursor=None,
+        )
+        assert cursor is None
+        assert results == [result]
+        raw.all.assert_called_once()
+        for filt in (
+            models.CoverageReportPullRequest.organization == "organization",
+            models.CoverageReportPullRequest.repo == "repo",
+            models.CoverageReportPullRequest.pull == 1,
+            models.CoverageReportPullRequest.commit_hash == "commit",
+        ):
+            for call in raw.filter.mock_calls:
+                if call.args[0].compare(filt):
+                    break
+            else:
+                raise AssertionError(f"Could not find filter: {filt}")
+
+    async def test_get_pr_reports_cursor(self, db, raw):
+        result = {"coveragereportpullrequests_modification_date": datetime.utcnow()}
+        raw.all.return_value = [result]
+        cursor, results = await db.get_pr_reports(
+            organization="organization",
+            repo="repo",
+            pull=1,
+            commit="commit",
+            limit=1,
+            cursor="cursor",
+        )
+        assert cursor is not None
+        assert results == [result]
+        raw.all.assert_called_once()
+        for filt in (
+            models.CoverageReportPullRequest.organization == "organization",
+            models.CoverageReportPullRequest.repo == "repo",
+            models.CoverageReportPullRequest.pull == 1,
+            models.CoverageReportPullRequest.commit_hash == "commit",
+            models.CoverageReportPullRequest.modification_date > "cursor",
+        ):
+            for call in raw.filter.mock_calls:
+                if call.args[0].compare(filt):
+                    break
+            else:
+                raise AssertionError(f"Could not find filter: {filt}")

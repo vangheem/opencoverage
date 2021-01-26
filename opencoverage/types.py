@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import (
     Dict,
     List,
@@ -42,3 +43,24 @@ class Pull(pydantic.BaseModel):
     id: int
     base: str
     head: str
+
+
+class PRReportResult(TypedDict):
+    coveragereportpullrequests_organization: str
+    coveragereportpullrequests_repo: str
+    coveragereportpullrequests_branch: str
+    coveragereportpullrequests_commit_hash: str
+    coveragereportpullrequests_pull: str
+    coveragereportpullrequests_pull_diff: str
+    coveragereportpullrequests_line_rate: float
+    coveragereportpullrequests_modification_date: datetime
+    coveragereportpullrequests_creation_date: datetime
+    coveragereports_lines_valid: int
+    coveragereports_line_rate: float
+    coveragereports_lines_covered: int
+    coveragereports_branches_valid: int
+    coveragereports_branches_covered: int
+    coveragereports_branch_rate: float
+    coveragereports_complexity: float
+    coveragereports_modification_date: datetime
+    coveragereports_creation_date: datetime

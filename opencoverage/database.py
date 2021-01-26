@@ -128,7 +128,7 @@ class Database:
         commit: Optional[str] = None,
         limit: int = 10,
         cursor: Optional[str] = None,
-    ) -> Tuple[str, List[CoverageReportPullRequest]]:
+    ) -> Tuple[str, List[types.PRReportResult]]:
         query = self.db.query(
             [CoverageReportPullRequest, CoverageReport],
             mapper_factory=lambda q, context: lambda v: v,
@@ -141,20 +141,22 @@ class Database:
             query = query.filter(CoverageReportPullRequest.pull == int(pull))
         if commit is not None:
             query = query.filter(CoverageReportPullRequest.commit_hash == commit)
-        query.outerjoin(
+        query = query.outerjoin(
             CoverageReport,
             CoverageReportPullRequest.commit_hash == CoverageReport.commit_hash,
         )
-        return cast(
-            Tuple[str, List[CoverageReportPullRequest]],
-            await self._paged_results(
-                query,
-                CoverageReportPullRequest.modification_date,
-                limit=limit,
-                cursor=cursor,
-                reverse=True,
-            ),
+
+        if cursor is not None:
+            query = query.filter(CoverageReportPullRequest.modification_date > cursor)
+        query = query.order_by(CoverageReportPullRequest.modification_date.desc()).limit(
+            limit
         )
+
+        results = await query.all()
+        cursor_result = None
+        if len(results) == limit:
+            cursor_result = results[-1]["coveragereportpullrequests_modification_date"]
+        return cast(Tuple[str, List[types.PRReportResult]], (cursor_result, results))
 
     async def get_report(
         self, organization: str, repo: str, commit: str
