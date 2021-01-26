@@ -105,7 +105,10 @@ Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self
                     else:
                         ddata["misses"] += 1
 
-            ddata["line_rate"] = file_covered / file_total
+            if file_total > 0:
+                ddata["line_rate"] = file_covered / file_total
+            else:
+                ddata["line_rate"] = 1.0
             total += file_total
             covered += file_covered
             covered_diff_data.append(ddata)
