@@ -30,9 +30,11 @@ def test_get_client_unsupported():
 
 class TestGithub:
     @pytest.fixture()
-    def client(self, settings):
+    async def client(self, settings):
         settings.github_app_pem_file = os.path.join(utils.DATA_DIR, "test.pem")
-        yield scm.Github(settings, None)
+        cli = scm.Github(settings, None)
+        yield cli
+        await cli.close()
 
     @pytest.fixture()
     def response(self):
@@ -57,6 +59,8 @@ class TestGithub:
         session.put.return_value = req
         session.get.return_value = req
 
+        session.close = AsyncMock()
+
         client._session = session
         yield session
 
@@ -72,7 +76,7 @@ class TestGithub:
         with pytest.raises(TypeError):
             assert scm.get_client(settings, None)
 
-    def test_get_client(self, client):
+    async def test_get_client(self, client):
         assert client
 
     async def test_get_access_token(self, client, session, response):
@@ -191,3 +195,16 @@ class TestGithub:
         with pytest.raises(scm.github.NotFoundException):
             async for chunk in client.download_file("org", "repo", "commit", "filename"):
                 ...
+
+    async def test_file_exists(self, client, session, response, token):
+        response.status = 200
+        assert await client.file_exists("org", "repo", "commit", "filename")
+
+    async def test_not_file_exists(self, client, session, response, token):
+        response.status = 404
+        assert not await client.file_exists("org", "repo", "commit", "filename")
+
+    async def test_file_exists_authz(self, client, session, response, token):
+        response.status = 401
+        with pytest.raises(scm.github.AuthorizationException):
+            assert not await client.file_exists("org", "repo", "commit", "filename")

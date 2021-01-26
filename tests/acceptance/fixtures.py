@@ -30,6 +30,11 @@ def app(settings, bootstrap):
     yield HTTPApplication(settings)
 
 
+@pytest.fixture()
+def db(app):
+    yield app.db
+
+
 class TasksChecker:
     def __init__(self, app):
         self.app = app

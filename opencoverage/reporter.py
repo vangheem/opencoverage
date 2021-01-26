@@ -110,7 +110,9 @@ Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self
             covered += file_covered
             covered_diff_data.append(ddata)
 
-        return covered_diff_data, covered / total
+        if total > 0:
+            return covered_diff_data, covered / total
+        return covered_diff_data, 0
 
     async def update_pull(self, pull: types.Pull, coverage: types.CoverageData):
         diff = await self.scm.get_pull_diff(self.organization, self.repo, pull.id)

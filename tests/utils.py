@@ -1,6 +1,6 @@
 import os
 
-from opencoverage.parser import parse_raw_coverage_data
+from opencoverage.reporter import CoverageReporter
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
@@ -10,12 +10,16 @@ def read_data(name):
         return fi.read()
 
 
-async def add_coverage(db, organization, repo, branch, commit, coverage):
-    coverage = parse_raw_coverage_data(read_data(coverage))
-    await db.save_coverage(
+async def add_coverage(
+    settings, db, scm, organization, repo, branch, commit, coverage_filename
+):
+    reporter = CoverageReporter(
+        settings=settings,
+        db=db,
+        scm=scm,
         organization=organization,
         repo=repo,
         branch=branch,
-        commit_hash=commit,
-        coverage=coverage,
+        commit=commit,
     )
+    await reporter(coverage_data=read_data(coverage_filename))

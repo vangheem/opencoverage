@@ -77,6 +77,12 @@ class SCMClient(abc.ABC):
     ) -> AsyncIterator[bytes]:  # pragma: no cover
         yield b""
 
+    @abc.abstractmethod
+    async def file_exists(
+        self, org: str, repo: str, commit: str, filename: str
+    ) -> bool:  # pragma: no cover
+        ...
+
     async def __aenter__(self):
         await self.validate()
         return self
