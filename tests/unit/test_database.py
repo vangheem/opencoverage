@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import sqlalchemy.orm.exc
 
-from opencoverage import models, types
+from opencoverage import models
 from opencoverage.database import Database
 
 pytestmark = pytest.mark.asyncio
