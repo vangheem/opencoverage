@@ -37,7 +37,7 @@ class GithubRepo(pydantic.BaseModel):
     full_name: str
     private: bool
     owner: GithubUser
-    description: str
+    description: Optional[str]
     fork: bool
     url: str
     created_at: str
@@ -59,7 +59,7 @@ class GithubPull(pydantic.BaseModel):
     patch_url: str
     number: int
     state: str
-    title: str
+    title: Optional[str]
     user: GithubUser
     created_at: str
     updated_at: str
@@ -85,7 +85,7 @@ class GithubCheckOutput(pydantic.BaseModel):
 
 class GithubApp(pydantic.BaseModel):
     created_at: datetime
-    description: str
+    description: Optional[str]
     external_url: str
     id: int
     name: str
