@@ -66,7 +66,6 @@ class Database:
 
     async def _paged_results(
         self,
-        model,
         query,
         cursor_type,
         limit: int = 10,
@@ -89,7 +88,6 @@ class Database:
         self, organization: str, limit: int = 10, cursor: Optional[str] = None
     ) -> Tuple[Optional[str], List[Repo]]:
         return await self._paged_results(
-            Repo,
             self.db.query(Repo).filter(Repo.organization == organization),
             Repo.name,
             limit=limit,
@@ -114,7 +112,6 @@ class Database:
         return cast(
             Tuple[str, List[CoverageReport]],
             await self._paged_results(
-                CoverageReport,
                 query,
                 CoverageReport.modification_date,
                 limit=limit,
@@ -151,7 +148,6 @@ class Database:
         return cast(
             Tuple[str, List[CoverageReportPullRequest]],
             await self._paged_results(
-                CoverageReportPullRequest,
                 query,
                 CoverageReportPullRequest.modification_date,
                 limit=limit,
@@ -182,7 +178,6 @@ class Database:
         return cast(
             Tuple[str, List[PullRequest]],
             await self._paged_results(
-                PullRequest,
                 self.db.query(PullRequest).filter(
                     PullRequest.organization == organization, PullRequest.repo == repo
                 ),

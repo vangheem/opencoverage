@@ -30,7 +30,7 @@ async def get_badge(request: Request, org: str, repo: str):
 
     report = reports[0]
     rate = round(report.line_rate * 100)
-    for crate, color in COLORS:
+    for crate, color in COLORS:  # pragma: no cover
         if rate >= crate:
             break
 

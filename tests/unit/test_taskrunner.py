@@ -66,6 +66,10 @@ class TestConsume:
         await runner.stop_consuming()
         assert runner.consume_task is None
 
+    async def test_stop_consuming_without_start(self, db, runner):
+        await runner.stop_consuming()
+        assert runner.consume_task is None
+
     async def test_run_tasks_retries_on_error(self, runner):
         with patch("opencoverage.taskrunner.logger") as logger, patch.object(
             runner, "_run_tasks", side_effect=Exception()

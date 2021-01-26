@@ -141,6 +141,25 @@ index 8ad9304b..de0e1d25 100644
     assert diff[0]["lines"] == [32]
 
 
+def test_parse_diff_emtpy():
+    diff = parser.parse_diff(
+        """diff --git a/guillotina/addons.py b/guillotina/addons.py
+index 8ad9304b..de0e1d25 100644
+--- a/guillotina/addons.py
++++ b/guillotina/addons.py
+@@ -29,6 -29,7 @@ async def install(container, addon):
+         await install(container, dependency)
+     await apply_coroutine(handler.install, container, request)
+     registry = task_vars.registry.get()
+-    registry
+     config = registry.for_interface(IAddons)
+     config["enabled"] |= {addon}
+
+"""
+    )
+    assert len(diff) == 0
+
+
 def test_parse_diff_ignore_binary():
     bpatch = Mock()
     bpatch.is_binary_file = True
@@ -150,3 +169,21 @@ def test_parse_diff_ignore_binary():
     with patch("opencoverage.parser.PatchSet", return_value=[bpatch, dpatch]):
         diff = parser.parse_diff("diff")
         assert len(diff) == 0
+
+
+def test_parse_files():
+    files = parser.parse_files(
+        """<<<<<< EOF
+# path=foo1.txt
+one
+two
+<<<<<< EOF
+# path=foo2.txt
+one
+two
+<<<<<< EOF"""
+    )
+    assert files == {
+        "foo1.txt": "one\ntwo",
+        "foo2.txt": "one\ntwo",
+    }

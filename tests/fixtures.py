@@ -19,6 +19,7 @@ def scm():
     mock = AsyncMock()
     mock.__aenter__.return_value = mock
     mock.installation_id = "1234"
+    mock.get_pulls.return_value = []
     yield mock
 
 

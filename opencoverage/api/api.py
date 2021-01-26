@@ -173,5 +173,10 @@ async def download_file(
     org: str, repo: str, commit: str, request: Request, filename: str
 ):
     organization = await request.app.db.get_organization(org)
+    if organization is None:
+        return JSONResponse({"reason": "orgNotFound"}, status_code=404)
+
     async with get_client(request.app.settings, organization.installation_id) as scm:
+        if not await scm.file_exists(org, repo, commit, filename):
+            return JSONResponse({"reason": "fileNotFound"}, status_code=404)
         return StreamingResponse(scm.download_file(org, repo, commit, filename))

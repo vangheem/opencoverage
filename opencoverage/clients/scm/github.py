@@ -336,6 +336,20 @@ class Github(SCMClient):
                 text = await resp.text()
                 raise APIException(f"Error update check: {resp.status}: {text}")
 
+    async def file_exists(self, org: str, repo: str, commit: str, filename: str) -> bool:
+        url = f"{GITHUB_API_URL}/repos/{org}/{repo}/contents/{filename}"
+        async with await self._prepare_request(
+            url=url,
+            method="get",
+            params={"ref": commit},
+        ) as resp:
+            if resp.status == 401:
+                text = await resp.json()
+                raise AuthorizationException(f"API Unauthorized: {text}")
+            if resp.status == 404:
+                return False
+            return True
+
     async def download_file(
         self, org: str, repo: str, commit: str, filename: str
     ) -> AsyncIterator[bytes]:

@@ -54,6 +54,12 @@ async def test_upload_v4(settings):
     _, _, url = resp.body.decode().partition(" ")
     assert url == "http://foobar.com/root_path/upload-report?foo=bar"
 
+    # with slash
+    settings.root_path = "/root_path"
+    resp = await upload.upload_coverage_v4(request)
+    _, _, url = resp.body.decode().partition(" ")
+    assert url == "http://foobar.com/root_path/upload-report?foo=bar"
+
 
 async def test_upload_v4_https(settings):
     request = Mock()
