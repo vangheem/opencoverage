@@ -1,6 +1,7 @@
 import os
 from unittest.mock import AsyncMock
 
+import aiohttp_client
 import pytest
 
 from opencoverage.settings import Settings
@@ -27,3 +28,8 @@ def scm():
 def settings(pg_dsn):
     settings = Settings(dsn=pg_dsn, scm="dummy")
     yield settings
+
+
+@pytest.fixture(autouse=True)
+def clear_aiohttp_sessions(event_loop):
+    event_loop.run_until_complete(aiohttp_client.close())

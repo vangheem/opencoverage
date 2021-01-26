@@ -18,6 +18,21 @@ yarl = ">=1.0,<2.0"
 speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
+category = "main"
+description = "Automatic aiohttp ClientSession management"
+name = "aiohttp-client-manager"
+optional = false
+python-versions = "*"
+version = "1.1.1"
+
+[package.dependencies]
+aiohttp = "*"
+lru-dict = "*"
+
+[package.extras]
+test = ["pytest (4.4.0)", "pytest-runner", "pytest-aiohttp", "pytest-asyncio", "attrs (>=19.1.0)"]
+
+[[package]]
 category = "dev"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 name = "appdirs"
@@ -278,6 +293,14 @@ version = "5.7.0"
 colors = ["colorama (>=0.4.3,<0.5.0)"]
 pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
 requirements_deprecated_finder = ["pipreqs", "pip-api"]
+
+[[package]]
+category = "main"
+description = "An Dict like LRU container."
+name = "lru-dict"
+optional = false
+python-versions = "*"
+version = "1.1.6"
 
 [[package]]
 category = "main"
@@ -697,7 +720,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "a465bb44a1d7b71e96035151c47b6016b8e47347c31a0108918fdb918bf1157e"
+content-hash = "53ea18ed9358508d972c16c94804d2eb21b35a67764c7185a1cd1fc4d1608e80"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -739,6 +762,9 @@ aiohttp = [
     {file = "aiohttp-3.7.3-cp39-cp39-win32.whl", hash = "sha256:3b0036c978cbcc4a4512278e98e3e6d9e6b834dc973206162eddf98b586ef1c6"},
     {file = "aiohttp-3.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:e1b95972a0ae3f248a899cdbac92ba2e01d731225f566569311043ce2226f5e7"},
     {file = "aiohttp-3.7.3.tar.gz", hash = "sha256:9c1a81af067e72261c9cbe33ea792893e83bc6aa987bfbd6fdc1e5e7b22777c4"},
+]
+aiohttp-client-manager = [
+    {file = "aiohttp_client_manager-1.1.1.tar.gz", hash = "sha256:8e0ee0a839f3cce3291cf41282f71c0b6f0c5d425863ca22eb20eb9a0170ce21"},
 ]
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
@@ -941,6 +967,9 @@ idna = [
 isort = [
     {file = "isort-5.7.0-py3-none-any.whl", hash = "sha256:fff4f0c04e1825522ce6949973e83110a6e907750cd92d128b0d14aaaadbffdc"},
     {file = "isort-5.7.0.tar.gz", hash = "sha256:c729845434366216d320e936b8ad6f9d681aab72dc7cbc2d51bedc3582f3ad1e"},
+]
+lru-dict = [
+    {file = "lru-dict-1.1.6.tar.gz", hash = "sha256:365457660e3d05b76f1aba3e0f7fedbfcd6528e97c5115a351ddd0db488354cc"},
 ]
 lxml = [
     {file = "lxml-4.6.2-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:a9d6bc8642e2c67db33f1247a77c53476f3a166e09067c0474facb045756087f"},

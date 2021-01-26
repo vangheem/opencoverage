@@ -9,6 +9,7 @@ from typing import (
     cast,
 )
 
+import aiohttp_client
 import jwt
 import pydantic
 from cryptography.hazmat.backends import default_backend
@@ -191,7 +192,7 @@ class Github(SCMClient):
                 f"{GITHUB_API_URL}/app/installations/{self.installation_id}/access_tokens"
             )
             jwt_token = self._get_jwt_token()
-            async with self.session.post(
+            async with aiohttp_client.post(
                 url,
                 headers={
                     "Accepts": "application/vnd.github.v3+json",
@@ -219,7 +220,7 @@ class Github(SCMClient):
         params: Optional[Dict[str, str]] = None,
         json: Optional[Dict[str, Any]] = None,
     ):
-        func = getattr(self.session, method.lower())
+        func = getattr(aiohttp_client, method.lower())
         headers = headers or {}
         token = await self.get_access_token()
         headers["Authorization"] = f"token {token}"

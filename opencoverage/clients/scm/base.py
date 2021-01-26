@@ -7,8 +7,6 @@ from typing import (
     Type,
 )
 
-import aiohttp
-
 from opencoverage.settings import Settings
 from opencoverage.types import Pull
 
@@ -18,17 +16,9 @@ class SCMClient(abc.ABC):
 
     def __init__(self, settings: Settings, installation_id: Optional[str]):
         self.settings = settings
-        self._session = None
 
-    async def close(self):
-        if self._session is not None:
-            await self._session.close()
-
-    @property
-    def session(self):
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-        return self._session
+    async def close(self):  # pragma: no cover
+        ...
 
     @abc.abstractmethod
     async def get_pulls(

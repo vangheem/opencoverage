@@ -59,10 +59,8 @@ class TestGithub:
         session.put.return_value = req
         session.get.return_value = req
 
-        session.close = AsyncMock()
-
-        client._session = session
-        yield session
+        with patch("opencoverage.clients.scm.github.aiohttp_client", session):
+            yield session
 
     @pytest.fixture()
     def token(self, client):

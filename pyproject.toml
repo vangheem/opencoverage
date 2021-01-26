@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opencoverage"
-version = "0.0.14"
+version = "0.0.15"
 description = ""
 authors = ["vangheem"]
 license = "MIT"
@@ -20,6 +20,7 @@ psycopg2-binary = "^2.8.6"
 unidiff = "^0.6.0"
 cryptography = "^3.3.1"
 pyjwt = "^2.0.0"
+aiohttp-client-manager = "^1.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
