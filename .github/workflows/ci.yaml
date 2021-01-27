@@ -24,7 +24,7 @@ jobs:
         run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
           source $HOME/.poetry/env
-          make install
+          make install-dev
       - name: Run pre-checks
         run: |
           source $HOME/.poetry/env
@@ -78,7 +78,7 @@ jobs:
         run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - --version=1.1.4
           source $HOME/.poetry/env
-          make install
+          make install-dev
 
       - name: Copy github api pem
         run: 'echo "$COV_PEM" > cov.pem'
