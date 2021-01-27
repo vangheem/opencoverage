@@ -1,7 +1,10 @@
 POETRY ?= poetry
 
 install:
-	$(POETRY) install 
+	$(POETRY) install --no-dev 
+
+install-dev:
+	$(POETRY) install
 
 format:
 	$(POETRY) run isort opencoverage tests
