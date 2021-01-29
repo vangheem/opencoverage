@@ -107,6 +107,8 @@ jobs:
           node-version: 14.x
       - run: npm install -g yarn
         working-directory: ./app
+      - run: yarn install
+        working-directory: ./app
       - run: yarn coverage > coverage.lcov
         working-directory: ./app
       - run: yarn report-coverage
