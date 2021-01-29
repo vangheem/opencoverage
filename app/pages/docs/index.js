@@ -28,8 +28,8 @@ function Docs ({ params }) {
             Host private projects yourself
           </a>
           <a href='https://github.com/vangheem/opencoverage' className='box'>
-            <h2 className='title'>Contributing</h2>
-            Help make Open Coverage even better
+            <h2 className='title'>Contribute</h2>
+            Contribute to improving Open Coverage
           </a>
         </div>
       </div>

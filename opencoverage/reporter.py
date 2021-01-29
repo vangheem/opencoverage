@@ -66,7 +66,7 @@ class CoverageReporter:
         return f"""
 ## Coverage Report
 
-Overall coverage: *{coverage["line_rate"]}%*
+Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
 [Coverage report]({report_url})
 
 

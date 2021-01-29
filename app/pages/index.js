@@ -102,7 +102,7 @@ export default function Home () {
                 href='https://github.com/vangheem/opencoverage'
                 className='box'
               >
-                <h2 className='title'>Contributing</h2>
+                <h2 className='title'>Contribute</h2>
                 Help make Open Coverage better
               </a>
             </div>
