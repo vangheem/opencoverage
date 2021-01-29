@@ -23,6 +23,11 @@ export function rawFetcher (...urls) {
 }
 
 export function fmtRelativeDate (v) {
+  if (v.indexOf('Z') === -1) {
+    // convert naive to utc
+    v += 'Z'
+  }
+
   // Make a fuzzy time
   var delta = Math.round((+new Date() - Date.parse(v)) / 1000)
 

@@ -34,7 +34,7 @@ class SCMClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_check(
-        self, org: str, repo: str, commit: str
+        self, org: str, repo: str, commit: str, details_url: Optional[str] = None
     ) -> str:  # pragma: no cover
         ...
 

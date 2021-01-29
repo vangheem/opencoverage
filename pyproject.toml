@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opencoverage"
-version = "0.0.21"
+version = "0.1.0"
 description = ""
 authors = ["vangheem"]
 license = "MIT"
@@ -22,6 +22,8 @@ pyjwt = "^2.0.0"
 aiohttp-client-manager = "^1.1.1"
 # asyncom = "^0.3.2"
 asyncom = { git = "https://github.com/vangheem/asyncom.git", branch = "master" }
+lcov_cobertura = "^1.6"
+pyyaml = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

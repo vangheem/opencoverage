@@ -26,6 +26,7 @@ SCM integrations:
 
 - [x] github
 - [ ] bitbucket
+- [ ] gitlab
 
 ## Configuration
 

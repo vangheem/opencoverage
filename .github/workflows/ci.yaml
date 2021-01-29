@@ -94,7 +94,26 @@ jobs:
       - name: Upload coverage to Open Coverage
         run: |
           source $HOME/.poetry/env
-          poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml
+          poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml -F api
+  
+  tests-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: npm install -g yarn
+        working-directory: ./app
+      - run: yarn install
+        working-directory: ./app
+      - run: yarn coverage > coverage.lcov
+        working-directory: ./app
+      - run: yarn report-coverage
+        working-directory: ./app
+      
 
   build-docker:
     if: ${{ github.ref == 'refs/heads/master' }}

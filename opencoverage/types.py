@@ -17,7 +17,6 @@ class FileCoverageData(TypedDict):
 
 
 class CoverageData(TypedDict):
-    base_path: Optional[str]
     version: str
     timestamp: int
     lines_valid: int
@@ -64,3 +63,12 @@ class PRReportResult(TypedDict):
     coveragereports_complexity: float
     coveragereports_modification_date: datetime
     coveragereports_creation_date: datetime
+
+
+class CoverageConfigurationProject(pydantic.BaseModel):
+    base_path: Optional[str] = None
+    target: Optional[str] = None
+
+
+class CoverageConfiguration(pydantic.BaseModel):
+    projects: Optional[Dict[str, CoverageConfigurationProject]] = None

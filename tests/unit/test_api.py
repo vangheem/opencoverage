@@ -40,6 +40,7 @@ def req(settings, db, taskrunner, get_client):
     req.app.settings = settings
     req.app.db = db
     req.app.taskrunner = taskrunner
+    req.url = URL("http://foobar.com")
     yield req
 
 
@@ -51,13 +52,13 @@ async def test_upload_v4(settings):
     settings.root_path = "root_path"
     request.app.settings = settings
     resp = await upload.upload_coverage_v4(request)
-    _, _, url = resp.body.decode().partition(" ")
+    _, url = resp.body.decode().split()
     assert url == "http://foobar.com/root_path/upload-report?foo=bar"
 
     # with slash
     settings.root_path = "/root_path"
     resp = await upload.upload_coverage_v4(request)
-    _, _, url = resp.body.decode().partition(" ")
+    _, url = resp.body.decode().split()
     assert url == "http://foobar.com/root_path/upload-report?foo=bar"
 
 
@@ -69,7 +70,7 @@ async def test_upload_v4_https(settings):
     settings.root_path = "root_path"
     request.app.settings = settings
     resp = await upload.upload_coverage_v4(request)
-    _, _, url = resp.body.decode().partition(" ")
+    _, url = resp.body.decode().split()
     assert url == "https://foobar.com/root_path/upload-report?foo=bar"
 
 

@@ -1,0 +1,5 @@
+projects:
+  frontend:
+    base_path: app
+  api:
+    target: 100%

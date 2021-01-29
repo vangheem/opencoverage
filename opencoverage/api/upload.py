@@ -2,6 +2,7 @@ import logging
 import os
 import zlib
 from typing import Optional
+from urllib.parse import parse_qs
 
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -28,12 +29,16 @@ async def upload_coverage_v4(request: Request):
         _, _, url_part = upload_url.partition("://")
         upload_url = f"{scheme}://{url_part}"
     logger.info(f"Redirecting to {upload_url}")
-    return PlainTextResponse(f"success {upload_url}")
+    return PlainTextResponse(f"success\n{upload_url}")
 
 
 @router.put("/upload-report")
 async def upload_report(
-    request: Request, branch: str, commit: str, slug: str, token: Optional[str] = None
+    request: Request,
+    branch: str,
+    commit: str,
+    slug: str,
+    token: Optional[str] = None,
 ):
     data = await request.body()
     logger.info(f"Upload body {len(data)}: {request.headers}")
@@ -50,6 +55,14 @@ async def upload_report(
     else:
         installation_id = token
 
+    project = None
+    query = parse_qs(request.url.query)
+    if query.get("flags"):
+        for flag in query["flags"]:
+            name, _, value = flag.partition(":")
+            if name == "project":
+                project = value
+
     async with get_client(request.app.settings, installation_id) as scm:
         await request.app.db.update_organization(organization, scm.installation_id)
 
@@ -60,6 +73,7 @@ async def upload_report(
             repo=repo,
             branch=branch,
             commit=commit,
+            project=project,
             installation_id=installation_id,
             data=data,
         ),

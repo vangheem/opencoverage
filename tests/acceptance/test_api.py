@@ -26,7 +26,26 @@ async def coverage(settings, db, scm):
 async def test_upload(http_client, scm):
     resp = await http_client.put(
         "/upload-report",
-        query_string={"slug": "plone/guillotina", "branch": "master", "commit": "38432y"},
+        query_string={
+            "slug": "plone/guillotina",
+            "branch": "master",
+            "commit": "38432y",
+            "flags": "foo:bar",
+        },
+        data=read_data("guillotina.cov"),
+    )
+    assert resp.status_code == 200
+
+
+async def test_upload_with_project(http_client, scm):
+    resp = await http_client.put(
+        "/upload-report",
+        query_string={
+            "slug": "plone/guillotina",
+            "branch": "master",
+            "commit": "38432y",
+            "flags": "project:api",
+        },
         data=read_data("guillotina.cov"),
     )
     assert resp.status_code == 200
@@ -100,6 +119,14 @@ async def test_get_report(http_client, app, coverage):
 async def test_get_report_404(http_client, app):
     resp = await http_client.get("/plone/repos/guillotina/commits/missing/report")
     assert resp.status_code == 404
+
+
+async def test_add_lcov_report(http_client, app, settings, db, scm):
+    await add_coverage(settings, db, scm, "plone", "guillotina", "master", "123", "lcov")
+    resp = await http_client.get("/recent-reports")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["result"]) == 1
 
 
 async def test_get_recent_reports(http_client, app, settings, db, scm):

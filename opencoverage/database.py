@@ -14,6 +14,7 @@ from databases import DatabaseURL
 
 from . import models, types
 from .models import (
+    ROOT_PROJECT,
     Branch,
     Commit,
     CoverageRecord,
@@ -126,6 +127,7 @@ class Database:
         repo: Optional[str] = None,
         pull: Optional[int] = None,
         commit: Optional[str] = None,
+        project: Optional[str] = None,
         limit: int = 10,
         cursor: Optional[str] = None,
     ) -> Tuple[str, List[types.PRReportResult]]:
@@ -258,21 +260,21 @@ class Database:
         organization: str,
         repo: str,
         branch: str,
-        commit_hash: str,
         pull: types.Pull,
+        commit_hash: Optional[str] = None,
+        project: Optional[str] = None,
     ) -> Optional[CoverageReportPullRequest]:
+        filters = [
+            CoverageReportPullRequest.organization == organization,
+            CoverageReportPullRequest.branch == branch,
+            CoverageReportPullRequest.repo == repo,
+            CoverageReportPullRequest.pull == pull.id,
+            CoverageReportPullRequest.project == (project or ROOT_PROJECT),
+        ]
+        if commit_hash is not None:
+            filters.append(CoverageReportPullRequest.commit_hash == commit_hash)
         try:
-            return (
-                await self.db.query(CoverageReportPullRequest)
-                .filter(
-                    CoverageReportPullRequest.organization == organization,
-                    CoverageReportPullRequest.branch == branch,
-                    CoverageReportPullRequest.repo == repo,
-                    CoverageReportPullRequest.commit_hash == commit_hash,
-                    CoverageReportPullRequest.pull == pull.id,
-                )
-                .one()
-            )
+            return await self.db.query(CoverageReportPullRequest).filter(*filters).one()
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
@@ -286,12 +288,16 @@ class Database:
         repo: str,
         branch: str,
         commit_hash: str,
+        project: Optional[str],
         pull: types.Pull,
         pull_diff: List[types.DiffCoverage],
         check_id: str,
         comment_id: str,
         line_rate: float,
     ) -> None:
+        if project is None:
+            project = ROOT_PROJECT
+
         await self._ensure_ob(
             Branch, name=pull.base, organization=organization, repo=repo
         )
@@ -312,6 +318,7 @@ class Database:
             branch=branch,
             repo=repo,
             commit_hash=commit_hash,
+            project=project,
             pull=pull.id,
             pull_diff=pull_diff,
             check_id=check_id,
@@ -357,7 +364,11 @@ class Database:
         branch: str,
         commit_hash: str,
         coverage: types.CoverageData,
+        project: Optional[str] = ROOT_PROJECT,
     ) -> None:
+        if project is None:
+            project = ROOT_PROJECT
+
         await self._ensure_ob(Repo, name=repo, organization=organization)
         await self._ensure_ob(Branch, name=branch, organization=organization, repo=repo)
         await self._ensure_ob(
@@ -372,6 +383,7 @@ class Database:
                     CoverageReport.branch == branch,
                     CoverageReport.repo == repo,
                     CoverageReport.commit_hash == commit_hash,
+                    CoverageReport.project == project,
                 )
                 .one()
             )
@@ -384,6 +396,7 @@ class Database:
                 repo=repo,
                 commit_hash=commit_hash,
                 creation_date=datetime.utcnow(),
+                project=project,
             )
             self._update_coverage_data(report, coverage)
             await self.db.add(report)
@@ -394,6 +407,7 @@ class Database:
                 CoverageRecord.organization == organization,
                 CoverageRecord.repo == repo,
                 CoverageRecord.commit_hash == commit_hash,
+                CoverageRecord.project == project,
             ).delete()
             for filename, source in coverage["file_coverage"].items():
                 await self.db.add(
@@ -403,6 +417,7 @@ class Database:
                         repo=repo,
                         commit_hash=commit_hash,
                         filename=filename,
+                        project=project,
                         lines=source["lines"],
                         line_rate=source["line_rate"],
                         branch_rate=source["branch_rate"],

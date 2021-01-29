@@ -98,20 +98,20 @@ export default function Home () {
           </div>
         </section>
         <div className='section'>
-          <div class='columns'>
-            <div class='column'>
+          <div className='columns'>
+            <div className='column'>
               <a href='/docs/integration' className='box'>
                 <h2 className='title'>Integration</h2>
                 Integrating with your open source project
               </a>
             </div>
-            <div class='column'>
+            <div className='column'>
               <a href='/docs/hosting' className='box'>
                 <h2 className='title'>Hosting</h2>
                 Host private projects yourself
               </a>
             </div>
-            <div class='column'>
+            <div className='column'>
               <a
                 href='https://github.com/vangheem/opencoverage'
                 className='box'
