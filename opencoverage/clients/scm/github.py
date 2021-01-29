@@ -263,7 +263,7 @@ class Github(SCMClient):
             if resp.status == 401:
                 text = await resp.json()
                 raise AuthorizationException(f"API Unauthorized: {text}")
-            data = await resp.text()
+            data = await resp.text("latin-1")
         return data
 
     async def create_check(self, org: str, repo: str, commit: str) -> str:
