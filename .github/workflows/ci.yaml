@@ -31,7 +31,7 @@ jobs:
           make lint
           make mypy
   # Job to run tests
-  tests:
+  tests-api:
     runs-on: ubuntu-latest
 
     services:
@@ -120,7 +120,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - pre-checks
-      - tests
+      - tests-api
+      - tests-ui
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
