@@ -31,7 +31,7 @@ coverage-dev:
 	$(POETRY) run pytest -v tests -s --tb=native -v --cov=opencoverage --cov-report xml --env=.env.dev
 
 send-codecov:
-	$(POETRY) run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml
+	$(POETRY) run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml -F project:api
 
 run:
 	$(POETRY) run opencoverage

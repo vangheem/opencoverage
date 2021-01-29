@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from opencoverage.settings import Settings
 
@@ -20,6 +20,7 @@ class CoverageReporter:
         repo: str,
         branch: str,
         commit: str,
+        project: Optional[str],
     ):
         self.settings = settings
         self.db = db
@@ -28,6 +29,7 @@ class CoverageReporter:
         self.repo = repo
         self.branch = branch
         self.commit = commit
+        self.project = project
 
     async def __call__(
         self,
@@ -42,6 +44,7 @@ class CoverageReporter:
             branch=self.branch,
             commit_hash=self.commit,
             coverage=coverage,
+            project=self.project,
         )
 
         pulls = await self.scm.get_pulls(self.organization, self.repo, self.commit)

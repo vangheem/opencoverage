@@ -102,6 +102,9 @@ class Commit(Base):  # type: ignore
     )
 
 
+ROOT_PROJECT = "/"
+
+
 class CoverageReport(Base):  # type: ignore
     __tablename__ = "coveragereports"
 
@@ -109,6 +112,10 @@ class CoverageReport(Base):  # type: ignore
     repo = sa.Column(sa.String, index=True, primary_key=True)
     branch = sa.Column(sa.String, index=True, primary_key=True)
     commit_hash = sa.Column(sa.String, index=True, primary_key=True)
+
+    # projects are a way of handling mono-repo setups where
+    # you want to track coverage of multiple sub-folders seperately
+    project = sa.Column(sa.String, index=True, primary_key=True, default=ROOT_PROJECT)
 
     base_path = sa.Column(sa.String)
 
@@ -140,6 +147,7 @@ class CoverageRecord(Base):  # type: ignore
     repo = sa.Column(sa.String, index=True, primary_key=True)
     branch = sa.Column(sa.String, index=True, primary_key=True)
     commit_hash = sa.Column(sa.String, index=True, primary_key=True)
+    project = sa.Column(sa.String, index=True, primary_key=True, default=ROOT_PROJECT)
 
     lines = sa.Column(JSONB)
 
@@ -152,8 +160,14 @@ class CoverageRecord(Base):  # type: ignore
 
     __table_args__ = (
         sa.ForeignKeyConstraint(
-            ["organization", "repo", "branch", "commit_hash"],
-            [Commit.organization, Commit.repo, Commit.branch, Commit.hash],
+            ["organization", "repo", "branch", "commit_hash", "project"],
+            [
+                CoverageReport.organization,
+                CoverageReport.repo,
+                CoverageReport.branch,
+                CoverageReport.commit_hash,
+                CoverageReport.project,
+            ],
             ondelete="SET NULL",
         ),
     )
@@ -166,6 +180,7 @@ class CoverageReportPullRequest(Base):  # type: ignore
     repo = sa.Column(sa.String, index=True, primary_key=True)
     branch = sa.Column(sa.String, index=True, primary_key=True)
     commit_hash = sa.Column(sa.String, index=True, primary_key=True)
+    project = sa.Column(sa.String, index=True, primary_key=True, default=ROOT_PROJECT)
 
     pull = sa.Column(sa.Integer, primary_key=True)
     pull_diff = sa.Column(JSONB)
@@ -180,8 +195,14 @@ class CoverageReportPullRequest(Base):  # type: ignore
 
     __table_args__ = (
         sa.ForeignKeyConstraint(
-            ["organization", "repo", "branch", "commit_hash"],
-            [Commit.organization, Commit.repo, Commit.branch, Commit.hash],
+            ["organization", "repo", "branch", "commit_hash", "project"],
+            [
+                CoverageReport.organization,
+                CoverageReport.repo,
+                CoverageReport.branch,
+                CoverageReport.commit_hash,
+                CoverageReport.project,
+            ],
             ondelete="SET NULL",
         ),
     )

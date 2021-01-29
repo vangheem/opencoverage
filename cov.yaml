@@ -1,0 +1,11 @@
+coverage:
+  status:
+    project:
+      frontend:
+        base_path: app
+        flags:
+          - frontend
+      api:
+        target: 100%
+        flags:
+          - api

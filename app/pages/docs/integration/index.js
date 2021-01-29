@@ -6,8 +6,8 @@ function InstallOpenCoverage ({ params }) {
   return (
     <>
       <h2 className='title'>Install Open Coverage GitHub Application</h2>
-      <div class='message is-dark'>
-        <div class='message-body'>
+      <div className='message is-dark'>
+        <div className='message-body'>
           Before you can submit your coverage to the public Open Coverage
           service, you need install the application for your organization.
         </div>

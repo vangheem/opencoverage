@@ -14,6 +14,8 @@ class CoverageTaskConfig(pydantic.BaseModel):
     commit: str
     installation_id: Optional[str]
     data: bytes
+    flags: Optional[str] = None
+    project: Optional[str] = None
 
 
 async def run_coverage_report(
@@ -28,6 +30,7 @@ async def run_coverage_report(
             repo=config.repo,
             branch=config.branch,
             commit=config.commit,
+            project=config.project,
         )
         await reporter(coverage_data=config.data)
 

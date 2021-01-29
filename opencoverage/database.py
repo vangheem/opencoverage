@@ -21,6 +21,7 @@ from .models import (
     CoverageReportPullRequest,
     Organization,
     PullRequest,
+    ROOT_PROJECT,
     Repo,
     Task,
 )
@@ -357,7 +358,11 @@ class Database:
         branch: str,
         commit_hash: str,
         coverage: types.CoverageData,
+        project: Optional[str] = ROOT_PROJECT,
     ) -> None:
+        if project is None:
+            project = ROOT_PROJECT
+
         await self._ensure_ob(Repo, name=repo, organization=organization)
         await self._ensure_ob(Branch, name=branch, organization=organization, repo=repo)
         await self._ensure_ob(
@@ -372,6 +377,7 @@ class Database:
                     CoverageReport.branch == branch,
                     CoverageReport.repo == repo,
                     CoverageReport.commit_hash == commit_hash,
+                    CoverageReport.project == project,
                 )
                 .one()
             )
@@ -384,6 +390,7 @@ class Database:
                 repo=repo,
                 commit_hash=commit_hash,
                 creation_date=datetime.utcnow(),
+                project=project,
             )
             self._update_coverage_data(report, coverage)
             await self.db.add(report)
@@ -394,6 +401,7 @@ class Database:
                 CoverageRecord.organization == organization,
                 CoverageRecord.repo == repo,
                 CoverageRecord.commit_hash == commit_hash,
+                CoverageRecord.project == project,
             ).delete()
             for filename, source in coverage["file_coverage"].items():
                 await self.db.add(
@@ -403,6 +411,7 @@ class Database:
                         repo=repo,
                         commit_hash=commit_hash,
                         filename=filename,
+                        project=project,
                         lines=source["lines"],
                         line_rate=source["line_rate"],
                         branch_rate=source["branch_rate"],

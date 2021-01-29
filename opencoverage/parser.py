@@ -4,6 +4,8 @@ from typing import Dict, List
 
 from lxml import etree
 from unidiff import PatchSet
+from lcov_cobertura import LcovCobertura
+
 
 from opencoverage import types
 
@@ -38,6 +40,60 @@ def parse_files(data: str) -> Dict[str, str]:
     return files
 
 
+def parse_xml_coverage_data(cov_data: str, toc: List[str]) -> types.CoverageData:
+    try:
+        dom = etree.fromstring(cov_data)
+    except etree.XMLSyntaxError:
+        raise ParsingException("Invalid xml")
+
+    base_report_path = get_el(get_el(dom, "sources"), "source").text
+    file_coverage = {}
+    for pel in get_el(dom, "packages").findall("package"):
+        for classes in pel.findall("classes"):
+            for klass in classes.findall("class"):
+                lines = {}
+                for lel in get_el(klass, "lines").findall("line"):
+                    lines[int(lel.attrib["number"])] = int(lel.attrib["hits"])
+
+                # find correct filename
+                filename = klass.attrib["filename"]
+                if filename not in toc:
+                    for part in reversed(base_report_path.split(os.path.sep)):
+                        filename = f"{part}{os.path.sep}{filename}"
+                        if filename in toc:
+                            break
+                    else:
+                        # could not find valid path, ignore file
+                        continue
+
+                file_coverage[filename] = types.FileCoverageData(
+                    line_rate=float(klass.attrib["line-rate"]),
+                    branch_rate=float(klass.attrib["branch-rate"]),
+                    complexity=float(klass.attrib["complexity"]),
+                    lines=lines,
+                )
+
+    return types.CoverageData(
+        base_path=None,
+        version=dom.attrib["version"],
+        timestamp=int(dom.attrib["timestamp"]),
+        lines_covered=int(dom.attrib["lines-covered"]),
+        lines_valid=int(dom.attrib["lines-valid"]),
+        line_rate=float(dom.attrib["line-rate"]),
+        branches_covered=int(dom.attrib["branches-covered"]),
+        branches_valid=int(dom.attrib["branches-valid"]),
+        branch_rate=float(dom.attrib["branch-rate"]),
+        complexity=int(dom.attrib["complexity"]),
+        file_coverage=file_coverage,
+    )
+
+
+def parse_lcov_coverage_data(cov_data: str, toc: List[str]) -> types.CoverageData:
+    converter = LcovCobertura(cov_data)
+    cobertura_xml = converter.convert()
+    return parse_xml_coverage_data(cobertura_xml, toc)
+
+
 def parse_raw_coverage_data(data: bytes) -> types.CoverageData:
     text = data.decode("utf-8")
     toc_raw, _, files_data = text.partition("<<<<<< network")
@@ -46,51 +102,10 @@ def parse_raw_coverage_data(data: bytes) -> types.CoverageData:
     coverage_files = parse_files(files_data)
 
     for filename, cov_data in coverage_files.items():
-        try:
-            dom = etree.fromstring(cov_data)
-        except etree.XMLSyntaxError:
-            continue
-
-        base_report_path = get_el(get_el(dom, "sources"), "source").text
-        file_coverage = {}
-        for pel in get_el(dom, "packages").findall("package"):
-            for classes in pel.findall("classes"):
-                for klass in classes.findall("class"):
-                    lines = {}
-                    for lel in get_el(klass, "lines").findall("line"):
-                        lines[int(lel.attrib["number"])] = int(lel.attrib["hits"])
-
-                    # find correct filename
-                    filename = klass.attrib["filename"]
-                    if filename not in toc:
-                        for part in reversed(base_report_path.split(os.path.sep)):
-                            filename = f"{part}{os.path.sep}{filename}"
-                            if filename in toc:
-                                break
-                        else:
-                            # could not find valid path, ignore file
-                            continue
-
-                    file_coverage[filename] = types.FileCoverageData(
-                        line_rate=float(klass.attrib["line-rate"]),
-                        branch_rate=float(klass.attrib["branch-rate"]),
-                        complexity=float(klass.attrib["complexity"]),
-                        lines=lines,
-                    )
-
-        return types.CoverageData(
-            base_path=None,
-            version=dom.attrib["version"],
-            timestamp=int(dom.attrib["timestamp"]),
-            lines_covered=int(dom.attrib["lines-covered"]),
-            lines_valid=int(dom.attrib["lines-valid"]),
-            line_rate=float(dom.attrib["line-rate"]),
-            branches_covered=int(dom.attrib["branches-covered"]),
-            branches_valid=int(dom.attrib["branches-valid"]),
-            branch_rate=float(dom.attrib["branch-rate"]),
-            complexity=int(dom.attrib["complexity"]),
-            file_coverage=file_coverage,
-        )
+        if filename.endswith(".xml"):
+            return parse_xml_coverage_data(cov_data, toc)
+        elif filename.endswith(".lcov"):
+            return parse_lcov_coverage_data(cov_data, toc)
     else:
         raise ParsingException("Could not find coverage file")
 
