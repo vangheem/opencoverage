@@ -1,5 +1,28 @@
 // We can import bulma into the project using Sass.
+$danger: #ed0c6d
+$dark: black
+
+@import '../node_modules/@fortawesome/fontawesome-free/css/all.css'
 @import '../node_modules/bulma/bulma.sass'
+@import './hl.css'
+
+.navbar-item
+    img
+        max-height: inherit
+
+.hero-body
+    img
+        height: 100px
+
+.layoutwrapper
+    min-height: calc(100vh - 70px)
+    margin-bottom: 170px
+
+.footer
+    height: 50px
+    width: 100%
+    bottom: 0
+    position: fixed
 
 .source
     clear: both

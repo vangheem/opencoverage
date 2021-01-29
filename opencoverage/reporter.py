@@ -61,11 +61,13 @@ class CoverageReporter:
             hits += ddata["hits"]
             misses += ddata["misses"]
 
+        report_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report"
+        diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"
         return f"""
 ## Coverage Report
 
 Overall coverage: *{coverage["line_rate"]}%*
-Coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report
+[Coverage report]({report_url})
 
 
 ```diff
@@ -77,7 +79,7 @@ Coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo
 - Misses      {misses}
 
 ```
-Diff coverage report: {self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report
+[Diff coverage report]({diff_url})
 """  # noqa
 
     def get_line_rate(

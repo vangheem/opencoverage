@@ -13,7 +13,6 @@ fastapi = "^0.63.0"
 uvicorn = "^0.13.3"
 prometheus-client = "^0.8.0"
 python-dotenv = "^0.14.0"
-asyncom = "^0.3.1"
 aiohttp = "^3.7.3"
 lxml = "^4.6.2"
 psycopg2-binary = "^2.8.6"
@@ -21,6 +20,8 @@ unidiff = "^0.6.0"
 cryptography = "^3.3.1"
 pyjwt = "^2.0.0"
 aiohttp-client-manager = "^1.1.1"
+# asyncom = "^0.3.2"
+asyncom = { git = "https://github.com/vangheem/asyncom.git", branch = "master" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

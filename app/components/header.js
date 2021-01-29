@@ -1,16 +1,19 @@
-export default function Header () {
+import Menu from './menu.js'
+import Head from 'next/head'
+
+export default function Header ({ title }) {
+  if (!title) {
+    title = 'Open Coverage: Free and open source coverage reporting'
+  }
   return (
-    <div className='container'>
-      <section className='hero'>
-        <div className='hero-body'>
-          <div className='container'>
-            <h1 className='title'>Open Coverage</h1>
-            <h2 className='subtitle'>
-              Free and open source coverage reporting
-            </h2>
-          </div>
-        </div>
-      </section>
-    </div>
+    <>
+      <Head>
+        <title>{title}</title>
+        <link rel='icon' href='/logo/logo2-o.png' />
+        <link rel='shortcut icon' href='/logo/logo2-o.png' />
+        <link rel='apple-touch-icon' href='/logo/logo2-o.png' />
+      </Head>
+      <Menu />
+    </>
   )
 }

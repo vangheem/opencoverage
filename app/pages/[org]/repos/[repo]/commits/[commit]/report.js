@@ -1,7 +1,6 @@
 import useSWR from 'swr'
 import Link from 'next/link'
-import Header from '../../../../../../components/header'
-import Footer from '../../../../../../components/footer'
+import Layout from '../../../../../../components/layout'
 import Report from '../../../../../../components/report'
 import { fetcher, apiUrl, calcTagClassName } from '../../../../../../utils'
 
@@ -61,14 +60,15 @@ function ReportPage ({ params }) {
     return <div />
   }
   return (
-    <div className='container'>
-      <Header />
-      <Report report={data} />
-      <h3 className='title'>Package coverage</h3>
-      <ReportUrls params={params} />
-
-      <Footer />
-    </div>
+    <Layout title='Report: Open Coverage'>
+      <div className='container'>
+        <div className='section'>
+          <Report report={data} />
+          <h3 className='title'>Package coverage</h3>
+          <ReportUrls params={params} />
+        </div>
+      </div>
+    </Layout>
   )
 }
 

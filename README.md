@@ -2,7 +2,7 @@
 
 [![opencoverage](https://open-coverage.org/api/vangheem/repos/opencoverage/badge.svg)](https://open-coverage.org/vangheem/repos/opencoverage)
 
-Free and open alternative providing coverage reporting and diff coverage reporting.
+Free and open source alternative providing coverage reporting and diff coverage reporting.
 
 The project can be a simple replacement for codecov or coveralls for teams working
 on private repos.
