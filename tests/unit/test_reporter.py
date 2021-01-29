@@ -2,7 +2,7 @@ from unittest.mock import ANY, AsyncMock
 
 import pytest
 
-from opencoverage import types
+from opencoverage import models, types
 from opencoverage.reporter import CoverageReporter
 
 pytestmark = pytest.mark.asyncio
@@ -111,6 +111,70 @@ async def test_report_get_line_rate(reporter, db, scm):
     assert rate == 1.0
 
 
+async def test_report_get_line_rate_missing(reporter, db, scm):
+    coverage = {
+        "version": "5.3.1",
+        "timestamp": 1610313969570,
+        "lines_covered": 27879,
+        "lines_valid": 31160,
+        "line_rate": 0.8947,
+        "branches_covered": 0,
+        "branches_valid": 0,
+        "branch_rate": 0.0,
+        "complexity": 0,
+        "file_coverage": {"filename": {"lines": {1: 0}}},
+    }
+    ddata, rate = reporter.get_line_rate(
+        [
+            {
+                "filename": "filename",
+                "lines": [1],
+                "line_rate": 1,
+                "hits": 1,
+                "misses": 1,
+            },
+            {"filename": "missing", "lines": [1], "line_rate": 1, "hits": 0, "misses": 1},
+        ],
+        coverage,
+    )
+    assert ddata == [
+        {"filename": "filename", "lines": [1], "line_rate": 0.0, "hits": 0, "misses": 1}
+    ]
+    assert rate == 0.0
+
+
+async def test_report_get_line_rate_missing_files(reporter, db, scm):
+    coverage = {
+        "version": "5.3.1",
+        "timestamp": 1610313969570,
+        "lines_covered": 27879,
+        "lines_valid": 31160,
+        "line_rate": 0.8947,
+        "branches_covered": 0,
+        "branches_valid": 0,
+        "branch_rate": 0.0,
+        "complexity": 0,
+        "file_coverage": {"filename": {"lines": {}}},
+    }
+    ddata, rate = reporter.get_line_rate(
+        [
+            {
+                "filename": "filename",
+                "lines": [1],
+                "line_rate": 1,
+                "hits": 1,
+                "misses": 1,
+            },
+            {"filename": "missing", "lines": [1], "line_rate": 1, "hits": 0, "misses": 1},
+        ],
+        coverage,
+    )
+    assert ddata == [
+        {"filename": "filename", "lines": [1], "line_rate": 1.0, "hits": 0, "misses": 0}
+    ]
+    assert rate == 1.0
+
+
 async def test_report_update_pull(reporter, db, scm):
     scm.get_pull_diff.return_value = """diff --git a/guillotina/addons.py b/guillotina/addons.py
 index 8ad9304b..de0e1d25 100644
@@ -146,6 +210,43 @@ index 8ad9304b..de0e1d25 100644
     scm.update_check.assert_called_with(
         "organization", "repo", ANY, running=False, success=True
     )
+
+
+async def test_report_update_pull_update_existing_comment(reporter, db, scm):
+    scm.get_pull_diff.return_value = """diff --git a/guillotina/addons.py b/guillotina/addons.py
+index 8ad9304b..de0e1d25 100644
+--- a/guillotina/addons.py
++++ b/guillotina/addons.py
+@@ -29,6 +29,7 @@ async def install(container, addon):
+         await install(container, dependency)
+     await apply_coroutine(handler.install, container, request)
+     registry = task_vars.registry.get()
++    registry
+     config = registry.for_interface(IAddons)
+     config["enabled"] |= {addon}
+
+"""
+    cdiff = models.CoverageReportPullRequest(comment_id="comment_id")
+    db.get_coverage_diff.side_effect = [None, cdiff]
+    coverage = {
+        "version": "5.3.1",
+        "timestamp": 1610313969570,
+        "lines_covered": 27879,
+        "lines_valid": 31160,
+        "line_rate": 0.8947,
+        "branches_covered": 0,
+        "branches_valid": 0,
+        "branch_rate": 0.0,
+        "complexity": 0,
+        "file_coverage": {"filename": {"lines": {1: 1}}},
+    }
+    await reporter.update_pull(
+        types.Pull(id=1, base="base", head="head"),
+        coverage,
+    )
+
+    assert len(db.get_coverage_diff.mock_calls) == 2
+    scm.update_comment.assert_called_once()
 
 
 async def test_report_fix_base_paths(settings, db, scm):

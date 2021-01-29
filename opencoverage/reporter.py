@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 
 import yaml
 
+from opencoverage.models import ROOT_PROJECT
 from opencoverage.settings import Settings
 
 from . import types
@@ -105,9 +106,13 @@ class CoverageReporter:
             hits += ddata["hits"]
             misses += ddata["misses"]
 
+        project_text = ""
+        if self.project not in (ROOT_PROJECT, None):
+            project_text = "`{self.project}`"
+
         diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
         return f"""
-## Coverage Report
+## Coverage Report {project_text}
 
 Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
 [Coverage report]({self.report_url})
@@ -182,9 +187,25 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
         text = await self.get_coverage_comment(diff_data, coverage, diff_line_rate, pull)
 
         if coverage_diff is None:
-            comment_id = await self.scm.create_comment(
-                self.organization, self.repo, pull.id, text
+            # check to see if there is already a comment on the PR with a different diff
+            # with different commit hash
+            coverage_diff = await self.db.get_coverage_diff(
+                organization=self.organization,
+                repo=self.repo,
+                branch=self.branch,
+                project=self.project,
+                pull=pull,
             )
+            if coverage_diff is None:
+                comment_id = await self.scm.create_comment(
+                    self.organization, self.repo, pull.id, text
+                )
+            else:
+                comment_id = coverage_diff.comment_id
+                await self.scm.update_comment(
+                    self.organization, self.repo, coverage_diff.comment_id, text
+                )
+
             await self.db.create_coverage_diff(
                 organization=self.organization,
                 repo=self.repo,

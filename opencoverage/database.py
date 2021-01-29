@@ -260,23 +260,21 @@ class Database:
         organization: str,
         repo: str,
         branch: str,
-        commit_hash: str,
-        project: Optional[str],
         pull: types.Pull,
+        commit_hash: Optional[str] = None,
+        project: Optional[str] = None,
     ) -> Optional[CoverageReportPullRequest]:
+        filters = [
+            CoverageReportPullRequest.organization == organization,
+            CoverageReportPullRequest.branch == branch,
+            CoverageReportPullRequest.repo == repo,
+            CoverageReportPullRequest.pull == pull.id,
+            CoverageReportPullRequest.project == (project or ROOT_PROJECT),
+        ]
+        if commit_hash is not None:
+            filters.append(CoverageReportPullRequest.commit_hash == commit_hash)
         try:
-            return (
-                await self.db.query(CoverageReportPullRequest)
-                .filter(
-                    CoverageReportPullRequest.organization == organization,
-                    CoverageReportPullRequest.branch == branch,
-                    CoverageReportPullRequest.repo == repo,
-                    CoverageReportPullRequest.commit_hash == commit_hash,
-                    CoverageReportPullRequest.pull == pull.id,
-                    CoverageReportPullRequest.project == (project or ROOT_PROJECT),
-                )
-                .one()
-            )
+            return await self.db.query(CoverageReportPullRequest).filter(*filters).one()
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
