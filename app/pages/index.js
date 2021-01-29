@@ -82,6 +82,20 @@ export default function Home () {
               </div>
             </div>
           </div>
+          <div className='tile is-ancestor'>
+            <div className='tile is-6 is-vertical is-parent'>
+              <div className='tile is-child box'>
+                <p className='subtitle'>Coverage summaries</p>
+                <img src='screenshots/filelist.png' />
+              </div>
+            </div>
+            <div className='tile is-6 is-vertical is-parent'>
+              <div className='tile is-child box'>
+                <p className='subtitle'>File coverage</p>
+                <img src='screenshots/coverage.png' />
+              </div>
+            </div>
+          </div>
         </section>
         <div className='section'>
           <div class='columns'>
