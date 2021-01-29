@@ -266,13 +266,20 @@ class Github(SCMClient):
             data = await resp.text(encoding="latin-1")
         return data
 
-    async def create_check(self, org: str, repo: str, commit: str) -> str:
+    async def create_check(
+        self, org: str, repo: str, commit: str, details_url: Optional[str] = None
+    ) -> str:
         url = f"{GITHUB_API_URL}/repos/{org}/{repo}/check-runs"
         async with await self._prepare_request(
             url=url,
             method="post",
             headers={"Accept": "application/vnd.github.v3+json"},
-            json={"head_sha": commit, "name": "coverage", "status": "in_progress"},
+            json={
+                "head_sha": commit,
+                "name": "coverage",
+                "status": "in_progress",
+                "details_url": details_url or self.settings.public_url,
+            },
         ) as resp:
             if resp.status != 201:
                 text = await resp.text()

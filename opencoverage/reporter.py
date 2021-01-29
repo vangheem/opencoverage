@@ -88,6 +88,10 @@ class CoverageReporter:
             return types.CoverageConfiguration.parse_obj(data)
         return None
 
+    @property
+    def report_url(self) -> str:
+        return f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report"
+
     async def get_coverage_comment(
         self,
         diff_data: List[types.DiffCoverage],
@@ -101,13 +105,12 @@ class CoverageReporter:
             hits += ddata["hits"]
             misses += ddata["misses"]
 
-        report_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report"
         diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
         return f"""
 ## Coverage Report
 
 Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
-[Coverage report]({report_url})
+[Coverage report]({self.report_url})
 
 
 ```diff
@@ -164,7 +167,9 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
         diff_data = await run_async(parse_diff, diff)
         diff_data, diff_line_rate = self.get_line_rate(diff_data, coverage)
 
-        check_id = await self.scm.create_check(self.organization, self.repo, self.commit)
+        check_id = await self.scm.create_check(
+            self.organization, self.repo, self.commit, details_url=self.report_url
+        )
 
         coverage_diff = await self.db.get_coverage_diff(
             organization=self.organization,
