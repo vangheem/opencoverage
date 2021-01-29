@@ -1,4 +1,5 @@
 from typing import List, Tuple, Optional
+from io import StringIO
 
 from opencoverage.settings import Settings
 
@@ -7,6 +8,7 @@ from .clients import SCMClient
 from .database import Database
 from .parser import parse_diff, parse_raw_coverage_data
 from .utils import run_async
+import yaml
 
 
 class CoverageReporter:
@@ -38,6 +40,15 @@ class CoverageReporter:
     ) -> None:
         coverage = await run_async(parse_raw_coverage_data, coverage_data)
 
+        if self.project is not None:
+            # check to see if we need to fix paths in report
+            config = await self.get_coverage_configuration()
+            if config is not None:
+                if config.projects is not None:
+                    if self.project in config.projects:
+                        if config.projects[self.project].base_path is not None:
+                            breakpoint()
+
         await self.db.save_coverage(
             organization=self.organization,
             repo=self.repo,
@@ -50,6 +61,20 @@ class CoverageReporter:
         pulls = await self.scm.get_pulls(self.organization, self.repo, self.commit)
         for pull in pulls:
             await self.update_pull(pull, coverage)
+
+    async def get_coverage_configuration(self) -> Optional[types.CoverageConfiguration]:
+        if await self.scm.file_exists(
+            self.organization, self.repo, self.commit, "cov.yaml"
+        ):
+            data = b""
+            async for chunk in self.scm.download_file(
+                self.organization, self.repo, self.commit, "cov.yaml"
+            ):
+                data += chunk
+            text = data.decode("utf-8")
+            data = yaml.safe_load(StringIO(text))
+            return types.CoverageConfiguration.parse_obj(data)
+        return None
 
     async def get_coverage_comment(
         self,
