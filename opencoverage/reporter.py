@@ -62,7 +62,7 @@ class CoverageReporter:
             misses += ddata["misses"]
 
         report_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report"
-        diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"
+        diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
         return f"""
 ## Coverage Report
 
