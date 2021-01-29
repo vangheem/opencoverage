@@ -73,6 +73,10 @@ asyncpg = "*"
 databases = "*"
 sqlalchemy = "*"
 
+[package.source]
+reference = "dae5e4bc8f98d5fb9948c927eedf04f5105141e1"
+type = "git"
+url = "https://github.com/vangheem/asyncom.git"
 [[package]]
 category = "main"
 description = "An asyncio PostgreSQL driver"
@@ -720,7 +724,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "6eb71bd98d530215dce045e4c93d7b8cf8b4b35312da24ad73be0d917fbde4b9"
+content-hash = "0644dae34c10a74d10ea290ddcf536f1e561731c2c8523f61c3834efb3da29f2"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -777,9 +781,7 @@ async-timeout = [
     {file = "async-timeout-3.0.1.tar.gz", hash = "sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f"},
     {file = "async_timeout-3.0.1-py3-none-any.whl", hash = "sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3"},
 ]
-asyncom = [
-    {file = "asyncom-0.3.2.tar.gz", hash = "sha256:2fcfc2459e0d66f22194280d935937a3b32b1397ac3a75e538240ebad2fd08de"},
-]
+asyncom = []
 asyncpg = [
     {file = "asyncpg-0.21.0-cp35-cp35m-macosx_10_13_x86_64.whl", hash = "sha256:09badce47a4645cfe523cc8a182bd047d5d62af0caaea77935e6a3c9e77dc364"},
     {file = "asyncpg-0.21.0-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:6b7807bfedd24dd15cfb2c17c60977ce01410615ecc285268b5144a944ec97ff"},
