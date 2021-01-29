@@ -1,7 +1,5 @@
 import useSWR from 'swr'
-import Link from 'next/link'
-import Header from '../../../../../../../components/header'
-import Footer from '../../../../../../../components/footer'
+import Layout from '../../../../../../../components/layout'
 import ReportLink from '../../../../../../../components/reportlink'
 import {
   fetcher,
@@ -156,13 +154,13 @@ function FilePage ({ params }) {
   }
 
   return (
-    <div className='container'>
-      <Header />
-
-      <FileCoverage report={data} filename={filename} />
-
-      <Footer />
-    </div>
+    <Layout title='File: Open Coverage'>
+      <div className='container'>
+        <div className='section'>
+          <FileCoverage report={data} filename={filename} />
+        </div>
+      </div>
+    </Layout>
   )
 }
 

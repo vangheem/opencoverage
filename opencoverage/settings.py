@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     proxy_headers: bool = True
     root_path: str = ""
 
-    public_url: Optional[str] = None
+    public_url: Optional[str] = "https://open-coverage.org/api"
 
     dsn: str
 
