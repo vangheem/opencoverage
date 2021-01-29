@@ -2,17 +2,6 @@ import Layout from '../../../components/layout'
 import { useState } from 'react'
 import Highlight from 'react-highlight'
 
-export async function getStaticPaths () {
-  // nothing static here
-  return { paths: ['/docs/integration'], fallback: true }
-}
-
-export async function getStaticProps (context) {
-  return {
-    props: {} // will be passed to the page component as props
-  }
-}
-
 function InstallOpenCoverage ({ params }) {
   return (
     <>

@@ -1,10 +1,5 @@
 import Layout from '../../components/layout'
 
-export async function getStaticPaths () {
-  // nothing static here
-  return { paths: ['/docs'], fallback: true }
-}
-
 export async function getStaticProps (context) {
   return {
     props: {} // will be passed to the page component as props
