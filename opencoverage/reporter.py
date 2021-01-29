@@ -46,20 +46,20 @@ class CoverageReporter:
         if self.project is not None:
             # check to see if we need to fix paths in report
             config = await self.get_coverage_configuration()
-            if config is not None:
-                if config.projects is not None:
-                    if self.project in config.projects:
-                        project_config = config.projects[self.project]
-                        if project_config.base_path is not None:
-                            # fix paths in coverage report
-                            for filepath in [f for f in coverage["file_coverage"].keys()]:
-                                new_filepath = os.path.join(
-                                    project_config.base_path, filepath
-                                )
-                                coverage["file_coverage"][new_filepath] = coverage[
-                                    "file_coverage"
-                                ][filepath]
-                                del coverage["file_coverage"][filepath]
+            if (
+                config is not None
+                and config.projects is not None
+                and self.project in config.projects
+            ):
+                project_config = config.projects[self.project]
+                if project_config.base_path is not None:
+                    # fix paths in coverage report
+                    for filepath in [f for f in coverage["file_coverage"].keys()]:
+                        new_filepath = os.path.join(project_config.base_path, filepath)
+                        coverage["file_coverage"][new_filepath] = coverage[
+                            "file_coverage"
+                        ][filepath]
+                        del coverage["file_coverage"][filepath]
 
         await self.db.save_coverage(
             organization=self.organization,
