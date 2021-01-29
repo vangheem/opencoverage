@@ -117,8 +117,6 @@ class CoverageReport(Base):  # type: ignore
     # you want to track coverage of multiple sub-folders seperately
     project = sa.Column(sa.String, index=True, primary_key=True, default=ROOT_PROJECT)
 
-    base_path = sa.Column(sa.String)
-
     lines_valid = sa.Column(sa.Integer)
     lines_covered = sa.Column(sa.Integer)
     line_rate = sa.Column(sa.Float)

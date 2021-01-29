@@ -14,6 +14,7 @@ from databases import DatabaseURL
 
 from . import models, types
 from .models import (
+    ROOT_PROJECT,
     Branch,
     Commit,
     CoverageRecord,
@@ -21,7 +22,6 @@ from .models import (
     CoverageReportPullRequest,
     Organization,
     PullRequest,
-    ROOT_PROJECT,
     Repo,
     Task,
 )
@@ -127,6 +127,7 @@ class Database:
         repo: Optional[str] = None,
         pull: Optional[int] = None,
         commit: Optional[str] = None,
+        project: Optional[str] = None,
         limit: int = 10,
         cursor: Optional[str] = None,
     ) -> Tuple[str, List[types.PRReportResult]]:
@@ -260,6 +261,7 @@ class Database:
         repo: str,
         branch: str,
         commit_hash: str,
+        project: Optional[str],
         pull: types.Pull,
     ) -> Optional[CoverageReportPullRequest]:
         try:
@@ -271,6 +273,7 @@ class Database:
                     CoverageReportPullRequest.repo == repo,
                     CoverageReportPullRequest.commit_hash == commit_hash,
                     CoverageReportPullRequest.pull == pull.id,
+                    CoverageReportPullRequest.project == (project or ROOT_PROJECT),
                 )
                 .one()
             )
@@ -287,12 +290,16 @@ class Database:
         repo: str,
         branch: str,
         commit_hash: str,
+        project: Optional[str],
         pull: types.Pull,
         pull_diff: List[types.DiffCoverage],
         check_id: str,
         comment_id: str,
         line_rate: float,
     ) -> None:
+        if project is None:
+            project = ROOT_PROJECT
+
         await self._ensure_ob(
             Branch, name=pull.base, organization=organization, repo=repo
         )
@@ -313,6 +320,7 @@ class Database:
             branch=branch,
             repo=repo,
             commit_hash=commit_hash,
+            project=project,
             pull=pull.id,
             pull_diff=pull_diff,
             check_id=check_id,

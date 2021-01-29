@@ -24,6 +24,8 @@ foobar
 <<<<<< EOF
 """  # noqa
         )
+    with pytest.raises(parser.ParsingException):
+        parser.parse_xml_coverage_data("foobar", [])
 
 
 def test_parse_coverage_ignore_invalid_paths():

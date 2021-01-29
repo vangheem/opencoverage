@@ -21,5 +21,6 @@ async def add_coverage(
         repo=repo,
         branch=branch,
         commit=commit,
+        project=None,
     )
     await reporter(coverage_data=read_data(coverage_filename))

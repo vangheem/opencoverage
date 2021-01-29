@@ -63,8 +63,8 @@ foobar
         repo="repo",
         branch="branch",
         commit_hash="commit",
+        project=None,
         coverage={
-            "base_path": None,
             "version": "5.3.1",
             "timestamp": 1610313969570,
             "lines_covered": 27879,
@@ -81,7 +81,6 @@ foobar
 
 async def test_report_get_line_rate(reporter, db, scm):
     coverage = {
-        "base_path": None,
         "version": "5.3.1",
         "timestamp": 1610313969570,
         "lines_covered": 27879,
@@ -127,7 +126,6 @@ index 8ad9304b..de0e1d25 100644
 
 """
     coverage = {
-        "base_path": None,
         "version": "5.3.1",
         "timestamp": 1610313969570,
         "lines_covered": 27879,
@@ -147,4 +145,79 @@ index 8ad9304b..de0e1d25 100644
     db.update_coverage_diff.assert_called_once()
     scm.update_check.assert_called_with(
         "organization", "repo", ANY, running=False, success=True
+    )
+
+
+async def test_report_fix_base_paths(settings, db, scm):
+    scm.file_exists.return_value = True
+
+    async def _download_file(*args):
+        yield b"""projects:
+  ui:
+    base_path: app
+"""
+
+    scm.download_file = _download_file
+
+    reporter = CoverageReporter(
+        settings=settings,
+        db=db,
+        scm=scm,
+        organization="organization",
+        repo="repo",
+        branch="branch",
+        commit="commit",
+        project="ui",
+    )
+    await reporter(
+        coverage_data=b"""
+foobar.py
+<<<<<< network
+# path=/path/to/coverage.xml
+<?xml version="1.0" ?>
+<coverage version="5.3.1" timestamp="1610313969570"
+          lines-valid="31160" lines-covered="27879" line-rate="0.8947"
+          branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+	<packages>
+		<package name="app" line-rate="0.9112" branch-rate="0" complexity="0">
+			<classes>
+				<class name="foobar.py" filename="foobar.py" complexity="0" line-rate="1" branch-rate="0">
+					<methods/>
+					<lines>
+						<line number="2" hits="1"/>
+					</lines>
+				</class>
+            </classes>
+        </package>
+    </packages>
+</coverage>
+
+<<<<<< EOF
+"""  # noqa
+    )
+    db.save_coverage.assert_called_with(
+        organization="organization",
+        repo="repo",
+        branch="branch",
+        commit_hash="commit",
+        project="ui",
+        coverage={
+            "branch_rate": 0.0,
+            "branches_covered": 0,
+            "branches_valid": 0,
+            "complexity": 0,
+            "file_coverage": {
+                "app/foobar.py": {
+                    "branch_rate": 0.0,
+                    "complexity": 0.0,
+                    "line_rate": 1.0,
+                    "lines": {2: 1},
+                }
+            },
+            "line_rate": 0.8947,
+            "lines_covered": 27879,
+            "lines_valid": 31160,
+            "timestamp": 1610313969570,
+            "version": "5.3.1",
+        },
     )

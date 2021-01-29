@@ -1,5 +1,8 @@
-from typing import List, Tuple, Optional
+import os
 from io import StringIO
+from typing import List, Optional, Tuple
+
+import yaml
 
 from opencoverage.settings import Settings
 
@@ -8,7 +11,6 @@ from .clients import SCMClient
 from .database import Database
 from .parser import parse_diff, parse_raw_coverage_data
 from .utils import run_async
-import yaml
 
 
 class CoverageReporter:
@@ -22,7 +24,7 @@ class CoverageReporter:
         repo: str,
         branch: str,
         commit: str,
-        project: Optional[str],
+        project: Optional[str] = None,
     ):
         self.settings = settings
         self.db = db
@@ -40,14 +42,24 @@ class CoverageReporter:
     ) -> None:
         coverage = await run_async(parse_raw_coverage_data, coverage_data)
 
+        project_config = None
         if self.project is not None:
             # check to see if we need to fix paths in report
             config = await self.get_coverage_configuration()
             if config is not None:
                 if config.projects is not None:
                     if self.project in config.projects:
-                        if config.projects[self.project].base_path is not None:
-                            breakpoint()
+                        project_config = config.projects[self.project]
+                        if project_config.base_path is not None:
+                            # fix paths in coverage report
+                            for filepath in [f for f in coverage["file_coverage"].keys()]:
+                                new_filepath = os.path.join(
+                                    project_config.base_path, filepath
+                                )
+                                coverage["file_coverage"][new_filepath] = coverage[
+                                    "file_coverage"
+                                ][filepath]
+                                del coverage["file_coverage"][filepath]
 
         await self.db.save_coverage(
             organization=self.organization,
@@ -159,6 +171,7 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
             repo=self.repo,
             branch=self.branch,
             commit_hash=self.commit,
+            project=self.project,
             pull=pull,
         )
         text = await self.get_coverage_comment(diff_data, coverage, diff_line_rate, pull)
@@ -172,6 +185,7 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
                 repo=self.repo,
                 branch=self.branch,
                 commit_hash=self.commit,
+                project=self.project,
                 pull=pull,
                 pull_diff=diff_data,
                 check_id=check_id,

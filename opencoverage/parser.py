@@ -2,10 +2,9 @@ import os
 from io import StringIO
 from typing import Dict, List
 
+from lcov_cobertura import LcovCobertura
 from lxml import etree
 from unidiff import PatchSet
-from lcov_cobertura import LcovCobertura
-
 
 from opencoverage import types
 
@@ -46,7 +45,12 @@ def parse_xml_coverage_data(cov_data: str, toc: List[str]) -> types.CoverageData
     except etree.XMLSyntaxError:
         raise ParsingException("Invalid xml")
 
-    base_report_path = get_el(get_el(dom, "sources"), "source").text
+    try:
+        base_path_el = get_el(get_el(dom, "sources"), "source")
+        base_report_path = base_path_el.text
+    except ParsingException:
+        base_report_path = ""
+
     file_coverage = {}
     for pel in get_el(dom, "packages").findall("package"):
         for classes in pel.findall("classes"):
@@ -74,7 +78,6 @@ def parse_xml_coverage_data(cov_data: str, toc: List[str]) -> types.CoverageData
                 )
 
     return types.CoverageData(
-        base_path=None,
         version=dom.attrib["version"],
         timestamp=int(dom.attrib["timestamp"]),
         lines_covered=int(dom.attrib["lines-covered"]),

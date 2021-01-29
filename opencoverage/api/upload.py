@@ -1,8 +1,8 @@
 import logging
-from urllib.parse import parse_qs
 import os
 import zlib
 from typing import Optional
+from urllib.parse import parse_qs
 
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -39,7 +39,6 @@ async def upload_report(
     commit: str,
     slug: str,
     token: Optional[str] = None,
-    flags: Optional[str] = None,
 ):
     data = await request.body()
     logger.info(f"Upload body {len(data)}: {request.headers}")

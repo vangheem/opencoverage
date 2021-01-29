@@ -17,7 +17,6 @@ class FileCoverageData(TypedDict):
 
 
 class CoverageData(TypedDict):
-    base_path: Optional[str]
     version: str
     timestamp: int
     lines_valid: int
