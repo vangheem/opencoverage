@@ -52,10 +52,6 @@ function Docs ({ params }) {
                   <td>Read & Write</td>
                 </tr>
                 <tr>
-                  <td>Packages</td>
-                  <td>Read</td>
-                </tr>
-                <tr>
                   <td>Pull Requests</td>
                   <td>Read & Write</td>
                 </tr>

@@ -170,7 +170,6 @@ class Github(SCMClient):
         "contents": Permissions.WRITE,
         "issues": Permissions.WRITE,
         "metadata": Permissions.READ,
-        "packages": Permissions.READ,
         "pull_requests": Permissions.WRITE,
         "statuses": Permissions.READ,
     }
