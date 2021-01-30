@@ -261,7 +261,7 @@ class Github(SCMClient):
         return func(url, headers=headers, params=params or {}, json=json)
 
     async def validate(self) -> None:
-        # getting a valid access token is all we need here
+        # Check the installation is correctly working
         url = f"{GITHUB_API_URL}/app/installations/{self.installation_id}"
         jwt_token = self._get_jwt_token()
         async with aiohttp_client.get(
