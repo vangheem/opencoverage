@@ -108,7 +108,7 @@ class CoverageReporter:
 
         project_text = ""
         if self.project not in (ROOT_PROJECT, None):
-            project_text = "`{self.project}`"
+            project_text = f"`{self.project}`"
 
         diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
         return f"""
