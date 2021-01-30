@@ -18,7 +18,12 @@ from opencoverage.settings import Settings
 from opencoverage.types import Pull
 
 from .base import SCMClient
-from .exceptions import APIException, AuthorizationException, NotFoundException
+from .exceptions import (
+    APIException,
+    AuthorizationException,
+    InstallationException,
+    NotFoundException,
+)
 
 
 class GithubUser(pydantic.BaseModel):
@@ -126,6 +131,20 @@ class GithubComment(pydantic.BaseModel):
     user: Optional[GithubUser]
 
 
+class GithubInstallation(pydantic.BaseModel):
+    account: Optional[GithubUser]
+    app_id: int
+    app_slug: str
+    created_at: str
+    id: int
+    permissions: Dict[str, str]
+    suspended_at: Optional[str]
+    suspended_by: Optional[str]
+    target_id: Optional[int]
+    target_type: Optional[str]
+    updated_at: Optional[str]
+
+
 GITHUB_API_URL = "https://api.github.com"
 
 
@@ -135,12 +154,26 @@ class Token(pydantic.BaseModel):
     access_data: Optional[GithubAccessData]
 
 
+class Permissions:
+    WRITE = "write"
+    READ = "read"
+
+
 # this should
 _token_cache: Dict[str, Token] = {}
 _private_key_cache = {}
 
 
 class Github(SCMClient):
+    _required_permissions = {
+        "checks": Permissions.WRITE,
+        "contents": Permissions.WRITE,
+        "issues": Permissions.WRITE,
+        "metadata": Permissions.READ,
+        "pull_requests": Permissions.WRITE,
+        "statuses": Permissions.READ,
+    }
+
     def __init__(self, settings: Settings, installation_id: Optional[str]):
         super().__init__(settings, installation_id)
         self.installation_id = cast(
@@ -227,8 +260,33 @@ class Github(SCMClient):
         return func(url, headers=headers, params=params or {}, json=json)
 
     async def validate(self) -> None:
-        # getting a valid access token is all we need here
-        await self.get_access_token()
+        # Check the installation is correctly working
+        url = f"{GITHUB_API_URL}/app/installations/{self.installation_id}"
+        jwt_token = self._get_jwt_token()
+        async with aiohttp_client.get(
+            url,
+            headers={
+                "Accepts": "application/vnd.github.v3+json",
+                "Authorization": f"Bearer {jwt_token}",
+            },
+        ) as resp:
+            if resp.status != 200:
+                text = await resp.text()
+                raise AuthorizationException(
+                    f"Invalid request from configuration application: {resp.status}: {text}"
+                )
+            install = GithubInstallation.parse_obj(await resp.json())
+            missing_perms = []
+            for name, lvl in self._required_permissions.items():
+                install_lvl = install.permissions.get(name)
+                if install_lvl is None or (
+                    install_lvl != lvl and install_lvl != Permissions.WRITE
+                ):
+                    missing_perms.append((name, lvl))
+            if len(missing_perms) > 0:
+                raise InstallationException(
+                    f"Applicaiton missing required permissions: {missing_perms}"
+                )
 
     async def get_pulls(self, org: str, repo: str, commit_hash: str) -> List[Pull]:
         url = f"{GITHUB_API_URL}/repos/{org}/{repo}/commits/{commit_hash}/pulls"

@@ -8,8 +8,9 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture()
 async def github():
-    async with get_client(Settings(scm="github"), None) as client:
-        yield client
+    client = get_client(Settings(scm="github"), None)
+    yield client
+    await client.close()
 
 
 async def test_get_pulls(github):
@@ -36,3 +37,7 @@ async def test_download_file(github):
     ):
         data += chunk
     assert "async def uninstall(container, addon)" in data.decode("utf-8")
+
+
+async def test_validate(github):
+    await github.validate()

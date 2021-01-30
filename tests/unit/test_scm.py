@@ -206,3 +206,22 @@ class TestGithub:
         response.status = 401
         with pytest.raises(scm.github.AuthorizationException):
             assert not await client.file_exists("org", "repo", "commit", "filename")
+
+    async def test_app_installation_does_not_validate(self, client, session, response):
+        response.status = 404
+        with pytest.raises(scm.github.AuthorizationException):
+            await client.validate()
+
+    async def test_app_installation_does_not_validate_perms(
+        self, client, session, response
+    ):
+        response.status = 200
+        response.json.return_value = scm.github.GithubInstallation(
+            app_id=1,
+            app_slug="app_slug",
+            created_at="created_at",
+            id=1,
+            permissions={"foo": "write"},
+        ).dict()
+        with pytest.raises(scm.github.InstallationException):
+            await client.validate()
