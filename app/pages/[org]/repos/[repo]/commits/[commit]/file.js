@@ -33,8 +33,11 @@ function FileLine ({ line, lineno, report, fileCoverage }) {
 }
 
 function File ({ report, filename, fileCoverage }) {
+  const router = useRouter()
   const resp = useSWR(
-    `${apiUrl}/${report.organization}/repos/${report.repo}/commits/${report.commit_hash}/download?filename=${filename}`,
+    `${apiUrl}/${report.organization}/repos/${report.repo}/commits/${
+      report.commit_hash
+    }/download?project=${router.query.project || ''}&filename=${filename}`,
     rawFetcher
   )
   if (!resp.data) {
@@ -59,8 +62,11 @@ function File ({ report, filename, fileCoverage }) {
 }
 
 function FileCoverage ({ report, filename }) {
+  const router = useRouter()
   const { data } = useSWR(
-    `${apiUrl}/${report.organization}/repos/${report.repo}/commits/${report.commit_hash}/file?filename=${filename}`,
+    `${apiUrl}/${report.organization}/repos/${report.repo}/commits/${
+      report.commit_hash
+    }/file?project=${router.query.project || ''}&filename=${filename}`,
     fetcher
   )
   if (data && data.reason && data.reason == 'fileNotFound') {
@@ -115,7 +121,9 @@ function FilePage ({ params }) {
   const { filename } = router.query
 
   const { data, error } = useSWR(
-    `${apiUrl}/${params.org}/repos/${params.repo}/commits/${params.commit}/report`,
+    `${apiUrl}/${params.org}/repos/${params.repo}/commits/${
+      params.commit
+    }/report?project=${router.query.project || ''}`,
     fetcher
   )
   if (!data) {

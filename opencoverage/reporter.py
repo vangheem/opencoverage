@@ -73,6 +73,8 @@ class CoverageReporter:
 
         pulls = await self.scm.get_pulls(self.organization, self.repo, self.commit)
         for pull in pulls:
+            if self.branch == pull.base:
+                continue
             await self.update_pull(pull, coverage)
 
     async def get_coverage_configuration(self) -> Optional[types.CoverageConfiguration]:

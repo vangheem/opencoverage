@@ -31,6 +31,7 @@ def _format_report(report):
         "repo": report.repo,
         "branch": report.branch,
         "commit_hash": report.commit_hash,
+        "project": report.project,
         "lines_valid": report.lines_valid,
         "lines_covered": report.lines_covered,
         "line_rate": report.line_rate,
@@ -44,9 +45,11 @@ def _format_report(report):
 
 
 @router.get("/{org}/repos/{repo}/commits/{commit}/report")
-async def get_report(org: str, repo: str, commit: str, request: Request):
+async def get_report(
+    org: str, repo: str, commit: str, request: Request, project: Optional[str] = None
+):
     db = request.app.db
-    report = await db.get_report(org, repo, commit)
+    report = await db.get_report(org, repo, commit, project=project)
     if report is None:
         return JSONResponse({}, status_code=404)
     return _format_report(report)
@@ -71,6 +74,7 @@ def _format_pr_report(report: types.PRReportResult) -> Dict[str, Any]:
         "repo": report["coveragereportpullrequests_repo"],
         "branch": report["coveragereportpullrequests_branch"],
         "commit_hash": report["coveragereportpullrequests_commit_hash"],
+        "project": report["coveragereportpullrequests_project"],
         "pull": report["coveragereportpullrequests_pull"],
         "pull_diff": report["coveragereportpullrequests_pull_diff"],
         "line_rate": report["coveragereportpullrequests_line_rate"],
@@ -113,10 +117,17 @@ async def get_reports(
 
 
 @router.get("/{org}/repos/{repo}/pulls/{pull}/{commit}/report")
-async def get_pr_report(org: str, repo: str, pull: str, commit: str, request: Request):
+async def get_pr_report(
+    org: str,
+    repo: str,
+    pull: str,
+    commit: str,
+    request: Request,
+    project: Optional[str] = None,
+):
     db = request.app.db
     _, reports = await db.get_pr_reports(
-        organization=org, repo=repo, pull=pull, commit=commit
+        organization=org, repo=repo, pull=pull, commit=commit, project=project
     )
     if len(reports) > 0:
         return _format_pr_report(reports[0])
@@ -135,10 +146,17 @@ async def get_pulls(org: str, repo: str, request: Request, cursor: Optional[str]
 
 @router.get("/{org}/repos/{repo}/commits/{commit}/files")
 async def get_files(
-    org: str, repo: str, commit: str, request: Request, cursor: Optional[str] = None
+    org: str,
+    repo: str,
+    commit: str,
+    request: Request,
+    cursor: Optional[str] = None,
+    project: Optional[str] = None,
 ):
     db = request.app.db
-    cursor, files = await db.get_report_files(org, repo, commit, cursor=cursor)
+    cursor, files = await db.get_report_files(
+        org, repo, commit, project=project, cursor=cursor
+    )
     return {
         "cursor": cursor,
         "result": [
@@ -148,9 +166,16 @@ async def get_files(
 
 
 @router.get("/{org}/repos/{repo}/commits/{commit}/file")
-async def get_file(org: str, repo: str, commit: str, request: Request, filename: str):
+async def get_file(
+    org: str,
+    repo: str,
+    commit: str,
+    request: Request,
+    filename: str,
+    project: Optional[str] = None,
+):
     db = request.app.db
-    fi = await db.get_report_file(org, repo, commit, filename)
+    fi = await db.get_report_file(org, repo, commit, filename, project=project)
     if fi is None:
         return JSONResponse({"reason": "fileNotFound"}, status_code=404)
     return {

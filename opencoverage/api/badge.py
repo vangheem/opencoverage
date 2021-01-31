@@ -1,3 +1,5 @@
+from typing import Optional
+
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -22,9 +24,15 @@ COLORS = (
 
 
 @router.get("/{org}/repos/{repo}/badge.svg")
-async def get_badge(request: Request, org: str, repo: str):
+async def get_badge(
+    request: Request,
+    org: str,
+    repo: str,
+    branch: Optional[str] = None,
+    project: Optional[str] = None,
+):
     db = request.app.db
-    _, reports = await db.get_reports(org, repo, limit=1)
+    _, reports = await db.get_reports(org, repo, branch=branch, project=project, limit=1)
     if len(reports) == 0:
         return JSONResponse({"reason": "notFound"}, status_code=404)
 

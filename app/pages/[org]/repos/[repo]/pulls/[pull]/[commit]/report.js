@@ -3,10 +3,14 @@ import Link from 'next/link'
 import Layout from '../../../../../../../components/layout'
 import Report from '../../../../../../../components/report'
 import { fetcher, apiUrl, calcTagClassName } from '../../../../../../../utils'
+import { useRouter } from 'next/router'
 
 function ReportUrls ({ params }) {
+  const router = useRouter()
   const { data, error } = useSWR(
-    `${apiUrl}/${params.org}/repos/${params.repo}/commits/${params.commit}/files`,
+    `${apiUrl}/${params.org}/repos/${params.repo}/commits/${
+      params.commit
+    }/files?project=${router.query.project || ''}`,
     fetcher
   )
   if (!data) {
@@ -35,7 +39,9 @@ function ReportUrls ({ params }) {
                     params.pull +
                     '/' +
                     params.commit +
-                    '/file?filename=' +
+                    '/file?project=' +
+                    (router.query.project || '') +
+                    '&filename=' +
                     value.filename
                   }
                 >
@@ -54,6 +60,7 @@ function ReportUrls ({ params }) {
 }
 
 function DiffReportUrls ({ report }) {
+  const router = useRouter()
   return (
     <table className='table'>
       <thead>
@@ -77,7 +84,9 @@ function DiffReportUrls ({ report }) {
                     report.pull +
                     '/' +
                     report.commit_hash +
-                    '/file?filename=' +
+                    '/file?project=' +
+                    (router.query.project || '') +
+                    '&filename=' +
                     value.filename
                   }
                 >
@@ -96,8 +105,11 @@ function DiffReportUrls ({ report }) {
 }
 
 function ReportPage ({ params }) {
+  const router = useRouter()
   const { data, error } = useSWR(
-    `${apiUrl}/${params.org}/repos/${params.repo}/pulls/${params.pull}/${params.commit}/report`,
+    `${apiUrl}/${params.org}/repos/${params.repo}/pulls/${params.pull}/${
+      params.commit
+    }/report?project=${router.query.project || ''}`,
     fetcher
   )
   if (!data) {

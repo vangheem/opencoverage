@@ -49,6 +49,7 @@ class PRReportResult(TypedDict):
     coveragereportpullrequests_repo: str
     coveragereportpullrequests_branch: str
     coveragereportpullrequests_commit_hash: str
+    coveragereportpullrequests_project: Optional[str]
     coveragereportpullrequests_pull: str
     coveragereportpullrequests_pull_diff: str
     coveragereportpullrequests_line_rate: float

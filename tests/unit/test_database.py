@@ -116,7 +116,7 @@ class TestGetReportFiles:
         record = {"filename": "filename"}
         raw.all.return_value = [record]
         cursor, results = await db.get_report_files(
-            "organization", "repo", "commit_hash", 1, "cursor"
+            "organization", "repo", "commit_hash", limit=1, cursor="cursor"
         )
         assert cursor == "filename"
         assert results == [record]

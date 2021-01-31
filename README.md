@@ -1,6 +1,6 @@
 # Open Coverage
 
-[![opencoverage](https://open-coverage.org/api/vangheem/repos/opencoverage/badge.svg)](https://open-coverage.org/vangheem/repos/opencoverage)
+[![opencoverage](https://open-coverage.org/api/vangheem/repos/opencoverage/badge.svg?branch=master&project=api)](https://open-coverage.org/vangheem/repos/opencoverage)
 
 Free and open source alternative providing coverage reporting and diff coverage reporting.
 
