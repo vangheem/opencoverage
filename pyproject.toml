@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opencoverage"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["vangheem"]
 license = "MIT"
@@ -37,6 +37,7 @@ pytest-cov = "^2.8.1"
 async-asgi-testclient = "^1.4.4"
 sqlalchemy-stubs = "^0.4"
 codecov = "^2.1.11"
+ipython = "^7.19.0"
 
 [tool.black]
 line-length = 90

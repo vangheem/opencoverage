@@ -94,7 +94,7 @@ jobs:
       - name: Upload coverage to Open Coverage
         run: |
           source $HOME/.poetry/env
-          poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml -F api
+          poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml -F project:api
   
   tests-ui:
     runs-on: ubuntu-latest

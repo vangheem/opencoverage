@@ -2,6 +2,14 @@ import { fmtRelativeDate } from '../utils'
 import Link from 'next/link'
 
 export default function ReportLink ({ report }) {
+  var project = report.project
+  if (!project || project == '/') {
+    project = ''
+  }
+  var projectLabel = <></>
+  if (project) {
+    projectLabel = <span className='tag is-warning is-light'>{project}</span>
+  }
   if (report.__type == 'CoverageReport') {
     return (
       <Link
@@ -12,7 +20,8 @@ export default function ReportLink ({ report }) {
           report.repo +
           '/commits/' +
           report.commit_hash +
-          '/report'
+          '/report?project=' +
+          project
         }
       >
         <a>
@@ -21,6 +30,7 @@ export default function ReportLink ({ report }) {
           </strong>{' '}
           <small>@ {report.branch}</small>{' '}
           <small>{fmtRelativeDate(report.modification_date)}</small>
+          {projectLabel}
         </a>
       </Link>
     )
@@ -36,7 +46,8 @@ export default function ReportLink ({ report }) {
           report.pull +
           '/' +
           report.commit_hash +
-          '/report'
+          '/report?project=' +
+          project
         }
       >
         <a>
@@ -45,6 +56,7 @@ export default function ReportLink ({ report }) {
           </strong>{' '}
           <small>@ {report.branch}</small>{' '}
           <small>{fmtRelativeDate(report.modification_date)}</small>
+          {projectLabel}
         </a>
       </Link>
     )

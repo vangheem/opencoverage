@@ -102,7 +102,7 @@ class Commit(Base):  # type: ignore
     )
 
 
-ROOT_PROJECT = "/"
+ROOT_PROJECT = ""
 
 
 class CoverageReport(Base):  # type: ignore

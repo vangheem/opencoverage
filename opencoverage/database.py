@@ -100,6 +100,7 @@ class Database:
         organization: Optional[str] = None,
         repo: Optional[str] = None,
         branch: Optional[str] = None,
+        project: Optional[str] = None,
         limit: int = 10,
         cursor: Optional[str] = None,
     ) -> Tuple[str, List[CoverageReport]]:
@@ -110,6 +111,8 @@ class Database:
             query = query.filter(CoverageReport.repo == repo)
         if branch is not None:
             query = query.filter(CoverageReport.branch == branch)
+        if project is not None:
+            query = query.filter(CoverageReport.project == project)
         return cast(
             Tuple[str, List[CoverageReport]],
             await self._paged_results(
@@ -143,9 +146,13 @@ class Database:
             query = query.filter(CoverageReportPullRequest.pull == int(pull))
         if commit is not None:
             query = query.filter(CoverageReportPullRequest.commit_hash == commit)
+        if project is not None:
+            query = query.filter(CoverageReportPullRequest.project == project)
         query = query.outerjoin(
             CoverageReport,
             CoverageReportPullRequest.commit_hash == CoverageReport.commit_hash,
+        ).filter(
+            CoverageReportPullRequest.project == CoverageReport.project,
         )
 
         if cursor is not None:
@@ -161,7 +168,7 @@ class Database:
         return cast(Tuple[str, List[types.PRReportResult]], (cursor_result, results))
 
     async def get_report(
-        self, organization: str, repo: str, commit: str
+        self, organization: str, repo: str, commit: str, project: Optional[str] = None
     ) -> Optional[CoverageReport]:
         try:
             return (
@@ -170,6 +177,7 @@ class Database:
                     CoverageReport.organization == organization,
                     CoverageReport.repo == repo,
                     CoverageReport.commit_hash == commit,
+                    CoverageReport.project == (project or ROOT_PROJECT),
                 )
                 .one()
             )
@@ -197,6 +205,7 @@ class Database:
         organization: str,
         repo: str,
         commit_hash: str,
+        project: Optional[str] = None,
         limit: int = 500,
         cursor: Optional[str] = None,
     ) -> Tuple[Optional[str], List[ReportFilesType]]:
@@ -210,6 +219,7 @@ class Database:
             CoverageRecord.organization == organization,
             CoverageRecord.repo == repo,
             CoverageRecord.commit_hash == commit_hash,
+            CoverageRecord.project == (project or ROOT_PROJECT),
         )
         if cursor is not None:
             query = query.filter(CoverageRecord.filename > cursor)
@@ -221,7 +231,12 @@ class Database:
         return cursor, results
 
     async def get_report_file(
-        self, organization: str, repo: str, commit_hash: str, filename: str
+        self,
+        organization: str,
+        repo: str,
+        commit_hash: str,
+        filename: str,
+        project: Optional[str] = None,
     ) -> Optional[CoverageRecord]:
         try:
             return (
@@ -231,6 +246,7 @@ class Database:
                     CoverageRecord.repo == repo,
                     CoverageRecord.commit_hash == commit_hash,
                     CoverageRecord.filename == filename,
+                    CoverageRecord.project == (project or ROOT_PROJECT),
                 )
                 .one()
             )
