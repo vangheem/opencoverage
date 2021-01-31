@@ -23,6 +23,11 @@ async def coverage(settings, db, scm):
     )
 
 
+async def test_ping(http_client, scm):
+    resp = await http_client.get("/ping")
+    assert resp.status_code == 200
+
+
 async def test_upload(http_client, scm):
     resp = await http_client.put(
         "/upload-report",

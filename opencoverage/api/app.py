@@ -1,11 +1,17 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 
 from opencoverage import taskrunner
 from opencoverage.database import Database
 from opencoverage.settings import Settings
 
 router = APIRouter()
+
+
+@router.get("/ping")
+async def ping(request: Request):
+    return {"pong": True}
 
 
 class HTTPApplication(FastAPI):

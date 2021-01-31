@@ -1,6 +1,11 @@
 # Open Coverage
 
 [![opencoverage](https://open-coverage.org/api/vangheem/repos/opencoverage/badge.svg?branch=master&project=api)](https://open-coverage.org/vangheem/repos/opencoverage)
+[![build](https://img.shields.io/github/checks-status/vangheem/opencoverage/master?label=Build)](https://github.com/vangheem/opencoverage/actions)
+[![license](https://img.shields.io/github/license/vangheem/opencoverage)](https://github.com/vangheem/opencoverage/blob/master/LICENSE)
+[![dockerapi](https://img.shields.io/docker/v/opencoverage/api?label=Docker%28API%29)](https://hub.docker.com/r/opencoverage/api)
+[![dockerfront](https://img.shields.io/docker/v/opencoverage/frontend?label=Docker%28Frontend%29)](https://hub.docker.com/r/opencoverage/frontend)
+[![apihealth](https://img.shields.io/website?label=API&url=https%3A%2F%2Fopen-coverage.org%2Fapi%2Fping)](https://open-coverage.org/)
 
 Free and open source alternative providing coverage reporting and diff coverage reporting.
 
