@@ -96,7 +96,7 @@ jobs:
           source $HOME/.poetry/env
           poetry run codecov --url="https://open-coverage.org/api" --token=- --slug=vangheem/opencoverage --file=coverage.xml -F project:api
   
-  tests-ui:
+  tests-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -116,13 +116,12 @@ jobs:
       #   working-directory: ./app
       
 
-  build-docker:
+  build-docker-api:
     if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     needs:
       - pre-checks
       - tests-api
-      - tests-ui
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -142,6 +141,25 @@ jobs:
           docker tag opencoverage/api:$VERSION opencoverage/api:latest
           docker push opencoverage/api:$VERSION
           docker push opencoverage/api:latest
+
+  build-docker-frontend:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    needs:
+      - pre-checks
+      - tests-frontend
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get version
+        run: echo "VERSION=$(awk '/^version =/{gsub(/"/,"",$3);print $3}' pyproject.toml)" >> $GITHUB_ENV
 
       - name: Build docker for Frontend
         run: |
