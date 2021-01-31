@@ -160,7 +160,8 @@ function Docs ({ params }) {
                     combination for your repository. For example,{' '}
                     <span className='tag'>vercel/next.js`</span>
                   </td>
-
+                </tr>
+                <tr>
                   <td>
                     <b>-F</b>
                   </td>
