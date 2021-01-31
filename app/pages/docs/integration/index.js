@@ -41,6 +41,10 @@ function InstallOpenCoverage ({ params }) {
       <p>
         <img src='/docs/install-id.png' />
       </p>
+      <p>
+        In this example, the install id is <span className='tag'>14396163</span>
+        .
+      </p>
     </>
   )
 }
@@ -56,13 +60,10 @@ function GenerateCoverage ({ params }) {
       <div className='tabs'>
         <ul>
           <li className={lang == 'python' ? 'is-active' : ''}>
-            <a onClick={() => setTab('python')}>Python</a>
+            <a onClick={() => setTab('python')}>Python/XML Coverage</a>
           </li>
           <li className={lang == 'js' ? 'is-active' : ''}>
-            <a onClick={() => setTab('js')}>JavaScript</a>
-          </li>
-          <li className={lang == 'java' ? 'is-active' : ''}>
-            <a onClick={() => setTab('java')}>Java</a>
+            <a onClick={() => setTab('js')}>JavaScript/lcov</a>
           </li>
         </ul>
       </div>
@@ -80,8 +81,37 @@ function GenerateCoverage ({ params }) {
           pytest tests --cov=[mypackage] --cov-report xml
         </Highlight>
       </div>
-      <div className={lang == 'js' ? '' : 'is-hidden'}>...</div>
-      <div className={lang == 'java' ? '' : 'is-hidden'}>...</div>
+      <div className={lang == 'js' ? '' : 'is-hidden'}>
+        There are multiple options for producing lcov coverage reports.
+        <br />
+        For example, with `jest`, you will need to configure it with{' '}
+        <span className='tag'>jest.config.js</span>:
+        <Highlight className='json'>
+          {`
+module.exports = {
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  setupFilesAfterEnv: ['<rootDir>/setupTests.js'],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': '<rootDir>/node_modules/babel-jest',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+  },
+  collectCoverageFrom: [
+    '**/*.{js,jsx}',
+    '!**/node_modules/**',
+    '!**/vendor/**',
+    '!**/.next/**'
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text-lcov']
+}
+
+`}
+        </Highlight>
+        This configures jest to produce lcov reports.
+        <br />
+        Then, create lcov:
+        <Highlight className='sh'>{`jest --coverage > coverage.lcov`}</Highlight>
+      </div>
     </>
   )
 }
@@ -95,7 +125,7 @@ function Docs ({ params }) {
         <br />
         <h1 className='title'>Open Coverage Documentation</h1>
         <p className='subtitle'>
-          Integration: Use the public open coverage service
+          Integration: Using the public Open Coverage service
         </p>
 
         <div className='notification is-danger'>
@@ -135,6 +165,14 @@ function Docs ({ params }) {
             codecov --url="https://open-coverage.org/api" --token=[github
             installation id] --slug=[org]/[repo]
           </Highlight>
+          You can also use the `codecov` npm package for node projects:
+          <Highlight className='sh'>yarn add codecov</Highlight>
+          Submit to open coverage is the same syntax:
+          <Highlight className='sh'>{`
+codecov --url='https://open-coverage.org/api' --token=14396163 --slug=[org]/[repo] -f coverage.lcov
+`}</Highlight>
+          There is a suite of client libraries for codecov that should be
+          compatible with Open Coverage.
           <div className='section'>
             <p className='subtitle'>Configuration</p>
             <table className='table'>
