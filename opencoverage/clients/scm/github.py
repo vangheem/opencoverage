@@ -342,8 +342,8 @@ class Github(SCMClient):
                 "status": "in_progress",
                 "details_url": details_url or self.settings.public_url,
                 "output": {
-                    "title": "Open Coverage",
-                    "summary": "Validating coverage targets",
+                    "title": "Open Coverage: Running",
+                    "summary": "Recording and checking coverage data",
                 },
             },
         ) as resp:
@@ -373,6 +373,10 @@ class Github(SCMClient):
             status = "in_progress"
         else:
             status = "completed"
+
+        if text is None:
+            text = "Successful"
+
         async with await self._prepare_request(
             url=url,
             method="patch",
@@ -381,9 +385,8 @@ class Github(SCMClient):
                 "status": status,
                 "conclusion": conclusion,
                 "output": {
-                    "title": "Open Coverage",
-                    "summary": "Validating coverage targets",
-                    "text": text,
+                    "title": text,
+                    "summary": "Recording and checking coverage data",
                 },
             },
         ) as resp:

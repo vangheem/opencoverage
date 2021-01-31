@@ -1,4 +1,4 @@
-from unittest.mock import ANY, AsyncMock
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
@@ -210,13 +210,12 @@ index 8ad9304b..de0e1d25 100644
         "file_coverage": {"filename": {"lines": {1: 1}}},
     }
     await reporter.update_pull(
-        types.Pull(id=1, base="base", head="head"),
-        coverage,
+        types.Pull(id=1, base="base", head="head"), coverage, None, None
     )
     scm.update_comment.assert_called_once()
     db.update_coverage_diff.assert_called_once()
     scm.update_check.assert_called_with(
-        "organization", "repo", ANY, running=False, success=True
+        "organization", "repo", ANY, running=False, success=True, text=None
     )
 
 
@@ -249,8 +248,7 @@ index 8ad9304b..de0e1d25 100644
         "file_coverage": {"filename": {"lines": {1: 1}}},
     }
     await reporter.update_pull(
-        types.Pull(id=1, base="base", head="head"),
-        coverage,
+        types.Pull(id=1, base="base", head="head"), coverage, None, None
     )
 
     assert len(db.get_coverage_diff.mock_calls) == 2
@@ -397,3 +395,169 @@ foobar.py
             "version": "5.3.1",
         },
     )
+
+
+async def test_hits_target_diff_coverage(reporter):
+    assert reporter.hits_target_diff_coverage(None, None, 0)
+    assert reporter.hits_target_diff_coverage(types.CoverageConfiguration(), None, 0)
+    assert reporter.hits_target_diff_coverage(
+        types.CoverageConfiguration(), types.CoverageConfigurationProject(), 0
+    )
+    assert reporter.hits_target_diff_coverage(
+        types.CoverageConfiguration(diff_target="BADVLAUE"),
+        types.CoverageConfigurationProject(),
+        0,
+    )
+    assert reporter.hits_target_diff_coverage(
+        types.CoverageConfiguration(diff_target="75%"),
+        types.CoverageConfigurationProject(),
+        75.1,
+    )
+    assert not reporter.hits_target_diff_coverage(
+        types.CoverageConfiguration(diff_target="75%"),
+        types.CoverageConfigurationProject(diff_target="80%"),
+        75,
+    )
+    assert reporter.hits_target_diff_coverage(
+        types.CoverageConfiguration(diff_target="75%"),
+        types.CoverageConfigurationProject(diff_target="80%"),
+        80.1,
+    )
+
+
+async def test_hits_target_coverage(reporter):
+    assert reporter.hits_target_coverage(None, None, 0)
+    assert reporter.hits_target_coverage(types.CoverageConfiguration(), None, 0)
+    assert reporter.hits_target_coverage(
+        types.CoverageConfiguration(), types.CoverageConfigurationProject(), 0
+    )
+    assert reporter.hits_target_coverage(
+        types.CoverageConfiguration(target="BADVLAUE"),
+        types.CoverageConfigurationProject(),
+        0,
+    )
+    assert reporter.hits_target_coverage(
+        types.CoverageConfiguration(target="75%"),
+        types.CoverageConfigurationProject(),
+        75.1,
+    )
+    assert not reporter.hits_target_coverage(
+        types.CoverageConfiguration(target="75%"),
+        types.CoverageConfigurationProject(target="80%"),
+        75,
+    )
+    assert reporter.hits_target_coverage(
+        types.CoverageConfiguration(target="75%"),
+        types.CoverageConfigurationProject(target="80%"),
+        80.1,
+    )
+
+
+async def test_report_update_pull_bad_hit_rate(reporter, db, scm):
+    scm.get_pull_diff.return_value = """diff --git a/guillotina/addons.py b/guillotina/addons.py
+index 8ad9304b..de0e1d25 100644
+--- a/guillotina/addons.py
++++ b/guillotina/addons.py
+@@ -29,6 +29,7 @@ async def install(container, addon):
+         await install(container, dependency)
+     await apply_coroutine(handler.install, container, request)
+     registry = task_vars.registry.get()
++    registry
+     config = registry.for_interface(IAddons)
+     config["enabled"] |= {addon}
+
+"""
+    coverage = {
+        "version": "5.3.1",
+        "timestamp": 1610313969570,
+        "lines_covered": 27879,
+        "lines_valid": 31160,
+        "line_rate": 0.8947,
+        "branches_covered": 0,
+        "branches_valid": 0,
+        "branch_rate": 0.0,
+        "complexity": 0,
+        "file_coverage": {"filename": {"lines": {1: 1}}},
+    }
+    await reporter.update_pull(
+        types.Pull(id=1, base="base", head="head"),
+        coverage,
+        types.CoverageConfiguration(target="100%"),
+        None,
+    )
+    scm.update_check.assert_called_with(
+        "organization",
+        "repo",
+        ANY,
+        running=False,
+        success=False,
+        text="Misses target line rate with 89.5%",
+    )
+
+
+async def test_report_update_pull_bad_diff_hit_rate(reporter, db, scm):
+    scm.get_pull_diff.return_value = """diff --git a/guillotina/addons.py b/guillotina/addons.py
+index 8ad9304b..de0e1d25 100644
+--- a/guillotina/addons.py
++++ b/guillotina/addons.py
+@@ -29,6 +29,7 @@ async def install(container, addon):
+         await install(container, dependency)
+     await apply_coroutine(handler.install, container, request)
+     registry = task_vars.registry.get()
++    registry
+     config = registry.for_interface(IAddons)
+     config["enabled"] |= {addon}
+
+"""
+    coverage = {
+        "version": "5.3.1",
+        "timestamp": 1610313969570,
+        "lines_covered": 27879,
+        "lines_valid": 31160,
+        "line_rate": 0.8947,
+        "branches_covered": 0,
+        "branches_valid": 0,
+        "branch_rate": 0.0,
+        "complexity": 0,
+        "file_coverage": {"filename": {"lines": {1: 0}}},
+    }
+    with patch.object(reporter, "get_line_rate", return_value=([], 0.5)):
+        await reporter.update_pull(
+            types.Pull(id=1, base="base", head="head"),
+            coverage,
+            types.CoverageConfiguration(diff_target="100%"),
+            None,
+        )
+    scm.update_check.assert_called_with(
+        "organization",
+        "repo",
+        ANY,
+        running=False,
+        success=False,
+        text="Misses target diff line rate with 50.0%",
+    )
+
+
+async def test_coverage_comment(reporter, db, scm):
+    text = await reporter.get_coverage_comment(
+        [],
+        {
+            "line_rate": 0.8947,
+        },
+        0.5,
+        types.Pull(id=1, base="base", head="head"),
+    )
+    assert "50.0%" in text
+
+
+async def test_coverage_comment_project(reporter, db, scm):
+    reporter.project = "foobar"
+    text = await reporter.get_coverage_comment(
+        [],
+        {
+            "line_rate": 0.8947,
+        },
+        0.5,
+        types.Pull(id=1, base="base", head="head"),
+    )
+    assert "`foobar`" in text

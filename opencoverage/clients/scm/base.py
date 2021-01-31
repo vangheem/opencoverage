@@ -46,6 +46,7 @@ class SCMClient(abc.ABC):
         check_id: str,
         running: bool = False,
         success: bool = False,
+        text: Optional[str] = None,
     ) -> None:  # pragma: no cover
         ...
 
