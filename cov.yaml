@@ -2,4 +2,5 @@ projects:
   frontend:
     base_path: app
   api:
-    target: 100%
+    target: 99%
+    diff_target: 100%

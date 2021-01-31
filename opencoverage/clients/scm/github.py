@@ -325,7 +325,11 @@ class Github(SCMClient):
         return data
 
     async def create_check(
-        self, org: str, repo: str, commit: str, details_url: Optional[str] = None
+        self,
+        org: str,
+        repo: str,
+        commit: str,
+        details_url: Optional[str] = None,
     ) -> str:
         url = f"{GITHUB_API_URL}/repos/{org}/{repo}/check-runs"
         async with await self._prepare_request(
@@ -337,6 +341,10 @@ class Github(SCMClient):
                 "name": "coverage",
                 "status": "in_progress",
                 "details_url": details_url or self.settings.public_url,
+                "output": {
+                    "title": "Open Coverage",
+                    "summary": "Validating coverage targets",
+                },
             },
         ) as resp:
             if resp.status != 201:
@@ -354,6 +362,7 @@ class Github(SCMClient):
         check_id: str,
         running: bool = False,
         success: bool = False,
+        text: Optional[str] = None,
     ) -> None:
         url = f"{GITHUB_API_URL}/repos/{org}/{repo}/check-runs/{check_id}"
         if success:
@@ -368,7 +377,15 @@ class Github(SCMClient):
             url=url,
             method="patch",
             headers={"Accept": "application/vnd.github.v3+json"},
-            json={"status": status, "conclusion": conclusion},
+            json={
+                "status": status,
+                "conclusion": conclusion,
+                "output": {
+                    "title": "Open Coverage",
+                    "summary": "Validating coverage targets",
+                    "text": text,
+                },
+            },
         ) as resp:
             if resp.status != 200:
                 text = await resp.text()
