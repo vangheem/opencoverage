@@ -50,7 +50,7 @@ export default function Home () {
           <div className='container'>
             <img src='logo/logo2-crp.png' title='Open coverage logo' />
             <h1 className='subtitle'>
-              Open coverage: Reporting for open source and private projects
+              Open Coverage: Reporting for open source and private projects
             </h1>
           </div>
         </div>
