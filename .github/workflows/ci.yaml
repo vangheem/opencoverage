@@ -111,8 +111,9 @@ jobs:
         working-directory: ./app
       - run: yarn coverage > coverage.lcov
         working-directory: ./app
-      - run: yarn report-coverage
-        working-directory: ./app
+      # don't report now, not serious about it as it's so little
+      # - run: yarn report-coverage
+      #   working-directory: ./app
       
 
   build-docker:
