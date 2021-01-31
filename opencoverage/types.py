@@ -69,7 +69,10 @@ class PRReportResult(TypedDict):
 class CoverageConfigurationProject(pydantic.BaseModel):
     base_path: Optional[str] = None
     target: Optional[str] = None
+    diff_target: Optional[str] = None
 
 
 class CoverageConfiguration(pydantic.BaseModel):
+    target: Optional[str] = None
+    diff_target: Optional[str] = None
     projects: Optional[Dict[str, CoverageConfigurationProject]] = None

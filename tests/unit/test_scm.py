@@ -144,10 +144,14 @@ class TestGithub:
             await client.create_check("org", "repo", "commit")
 
     async def test_update_check(self, client, session, response, token):
-        await client.update_check("org", "repo", "check_id")
+        await client.update_check("org", "repo", "check_id", text="foobar")
         assert session.patch.mock_calls[0].kwargs["json"] == {
             "status": "completed",
             "conclusion": "failure",
+            "output": {
+                "summary": "Recording and checking coverage data",
+                "title": "foobar",
+            },
         }
 
     async def test_update_check_success(self, client, session, response, token):
@@ -155,6 +159,10 @@ class TestGithub:
         assert session.patch.mock_calls[0].kwargs["json"] == {
             "status": "in_progress",
             "conclusion": "success",
+            "output": {
+                "summary": "Recording and checking coverage data",
+                "title": "Successful",
+            },
         }
 
     async def test_update_check_auth_error(self, client, session, response, token):

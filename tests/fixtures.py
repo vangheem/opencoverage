@@ -21,6 +21,7 @@ def scm():
     mock.__aenter__.return_value = mock
     mock.installation_id = "1234"
     mock.get_pulls.return_value = []
+    mock.file_exists.return_value = False
     yield mock
 
 

@@ -43,10 +43,10 @@ class CoverageReporter:
     ) -> None:
         coverage = await run_async(parse_raw_coverage_data, coverage_data)
 
+        config = await self.get_coverage_configuration()
         project_config = None
-        if self.project is not None:
+        if self.project is not None and config is not None:
             # check to see if we need to fix paths in report
-            config = await self.get_coverage_configuration()
             if (
                 config is not None
                 and config.projects is not None
@@ -75,7 +75,49 @@ class CoverageReporter:
         for pull in pulls:
             if self.branch == pull.base:
                 continue
-            await self.update_pull(pull, coverage)
+            await self.update_pull(pull, coverage, config, project_config)
+
+    def hits_target_diff_coverage(
+        self,
+        config: Optional[types.CoverageConfiguration],
+        project_config: Optional[types.CoverageConfigurationProject],
+        rate: float,
+    ) -> bool:
+        diff_target = None
+        # check coverage targets
+        if config is not None:
+            diff_target = config.diff_target
+            if project_config is not None:
+                if project_config.diff_target is not None:
+                    diff_target = project_config.diff_target
+
+        if diff_target is not None:
+            try:
+                return rate >= float(diff_target.strip("%"))
+            except ValueError:
+                ...
+        return True
+
+    def hits_target_coverage(
+        self,
+        config: Optional[types.CoverageConfiguration],
+        project_config: Optional[types.CoverageConfigurationProject],
+        rate: float,
+    ) -> bool:
+        target = None
+        # check coverage targets
+        if config is not None:
+            target = config.target
+            if project_config is not None:
+                if project_config.target is not None:
+                    target = project_config.target
+
+        if target is not None:
+            try:
+                return rate >= float(target.strip("%"))
+            except ValueError:
+                ...
+        return True
 
     async def get_coverage_configuration(self) -> Optional[types.CoverageConfiguration]:
         if await self.scm.file_exists(
@@ -95,6 +137,9 @@ class CoverageReporter:
     def report_url(self) -> str:
         return f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/commits/{self.commit}/report"
 
+    def get_diff_url(self, pull: types.Pull) -> str:
+        return f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
+
     async def get_coverage_comment(
         self,
         diff_data: List[types.DiffCoverage],
@@ -112,7 +157,7 @@ class CoverageReporter:
         if self.project not in (ROOT_PROJECT, None):
             project_text = f"`{self.project}`"
 
-        diff_url = f"{self.settings.public_url}/{self.organization}/repos/{self.repo}/pulls/{pull.id}/{self.commit}/report"  # noqa
+        diff_url = self.get_diff_url(pull)
         return f"""
 ## Coverage Report {project_text}
 
@@ -169,13 +214,19 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
             return covered_diff_data, covered / total
         return covered_diff_data, 1.0
 
-    async def update_pull(self, pull: types.Pull, coverage: types.CoverageData):
+    async def update_pull(
+        self,
+        pull: types.Pull,
+        coverage: types.CoverageData,
+        config: Optional[types.CoverageConfiguration],
+        project_config: Optional[types.CoverageConfigurationProject],
+    ):
         diff = await self.scm.get_pull_diff(self.organization, self.repo, pull.id)
         diff_data = await run_async(parse_diff, diff)
         diff_data, diff_line_rate = self.get_line_rate(diff_data, coverage)
 
         check_id = await self.scm.create_check(
-            self.organization, self.repo, self.commit, details_url=self.report_url
+            self.organization, self.repo, self.commit, details_url=self.get_diff_url(pull)
         )
 
         coverage_diff = await self.db.get_coverage_diff(
@@ -229,6 +280,26 @@ Overall coverage: *{(100 * coverage["line_rate"]):.1f}%*
             await self.db.update_coverage_diff(report=coverage_diff)
 
         success = True
+        check_text = None
+        if not self.hits_target_coverage(
+            config, project_config, 100 * coverage["line_rate"]
+        ):
+            success = False
+            check_text = (
+                f'Misses target line rate with {(100 * coverage["line_rate"]):.1f}%'
+            )
+        elif not self.hits_target_diff_coverage(
+            config, project_config, 100 * diff_line_rate
+        ):
+            success = False
+            check_text = (
+                f"Misses target diff line rate with {(100 * diff_line_rate):.1f}%"
+            )
         await self.scm.update_check(
-            self.organization, self.repo, check_id, running=False, success=success
+            self.organization,
+            self.repo,
+            check_id,
+            running=False,
+            success=success,
+            text=check_text,
         )

@@ -160,6 +160,91 @@ function Docs ({ params }) {
                     combination for your repository. For example,{' '}
                     <span className='tag'>vercel/next.js`</span>
                   </td>
+
+                  <td>
+                    <b>-F</b>
+                  </td>
+                  <td>
+                    Flags allow you to pass information about the coverage
+                    report. For example, to specify that the report is for a
+                    specific project in the repo, use the `-F project:foobar`
+                    and the report will be categorized separately from others.
+                    This is how you can manage mono-repos and one commit
+                    spanning multiple projects.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className='section'>
+          <h2 className='title'>cov.yaml: Configuration</h2>
+          <div className='message is-dark'>
+            <div className='message-body'>
+              To configure projects in your repo, you must have a{' '}
+              <span className='tag'>cov.yaml</span>
+              file in the root of your repo.
+            </div>
+          </div>
+          <Highlight className='sh'>
+            {`
+target: 99%
+projects:
+  frontend:
+    base_path: app
+  api:
+    target: 100%
+`}
+          </Highlight>
+          <div className='section'>
+            <table className='table'>
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <b>target</b>
+                  </td>
+                  <td>Global target coverage</td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>diff_target</b>
+                  </td>
+                  <td>Global target coverage on changed code</td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>projects</b>
+                  </td>
+                  <td>Container for project specific settings</td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>projects.[name].target</b>
+                  </td>
+                  <td>Customized target specifically for a project</td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>projects.[name].diff_target</b>
+                  </td>
+                  <td>
+                    Customized target coverage on changed code for a project
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <b>projects.[name].base_path</b>
+                  </td>
+                  <td>
+                    Base path of where coverage report was generated from. This
+                    is useful for mono-repos
+                  </td>
                 </tr>
               </tbody>
             </table>
