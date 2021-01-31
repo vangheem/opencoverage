@@ -5,6 +5,6 @@ describe('App', () => {
   it('renders without crashing', () => {
     const { container } = render(<App />)
     const h1 = container.querySelector('h1')
-    expect(h1.textContent).toEqual('Open Coverage:')
+    expect(h1.textContent).toContain('Open Coverage:')
   })
 })
