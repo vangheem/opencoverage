@@ -27,9 +27,7 @@ def reporter(settings, db, scm):
     )
 
 
-async def test_report(reporter, db, scm):
-    await reporter(
-        coverage_data=b"""
+COVERAGE_DATA = b"""
 foobar
 <<<<<< network
 # path=/path/to/coverage.xml
@@ -56,7 +54,10 @@ foobar
 
 <<<<<< EOF
 """  # noqa
-    )
+
+
+async def test_report(reporter, db, scm):
+    await reporter(coverage_data=COVERAGE_DATA)
     scm.get_pulls.assert_called_with("organization", "repo", "commit")
     db.save_coverage.assert_called_with(
         organization="organization",
@@ -77,6 +78,13 @@ foobar
             "file_coverage": {},
         },
     )
+
+
+async def test_report_ignores_pull_after_merge(reporter, db, scm):
+    scm.get_pulls.return_value = [types.Pull(id=1, base="branch", head="head")]
+    await reporter(coverage_data=COVERAGE_DATA)
+    scm.get_pulls.assert_called_with("organization", "repo", "commit")
+    scm.get_pull_diff.assert_not_called()
 
 
 async def test_report_get_line_rate(reporter, db, scm):

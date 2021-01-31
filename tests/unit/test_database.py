@@ -101,11 +101,13 @@ class TestGetReports:
     async def test_get_reports(self, db, raw):
         report = models.CoverageReport()
         raw.all.return_value = [report]
-        cursor, results = await db.get_reports("organization", "repo", "branch")
+        cursor, results = await db.get_reports(
+            "organization", "repo", "branch", "project"
+        )
         assert cursor is None
         assert results == [report]
         raw.query.assert_called_with(models.CoverageReport)
-        assert len(raw.filter.mock_calls) == 3
+        assert len(raw.filter.mock_calls) == 4
         raw.order_by.assert_called_once()
         raw.limit.assert_called_with(10)
         raw.all.assert_called_once()
@@ -186,6 +188,7 @@ class TestGetPRReports:
             repo="repo",
             pull=1,
             commit="commit",
+            project="project",
             limit=10,
             cursor=None,
         )
