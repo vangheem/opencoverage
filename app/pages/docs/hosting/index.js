@@ -12,7 +12,7 @@ function Docs ({ params }) {
     <Layout title='Hosting Documentation: Open Coverage'>
       <div className='container'>
         <br />
-        <h1 className='title'>Open Coverage Documentation</h1>
+        <h1 className='title'>Open Coverage Documentation: Hosting</h1>
         <p className='subtitle'>Host open coverage on-prem</p>
 
         <div className='notification'>

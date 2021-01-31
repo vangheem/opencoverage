@@ -123,10 +123,8 @@ function Docs ({ params }) {
     <Layout title='Integration Documentation: Open Coverage'>
       <div className='container'>
         <br />
-        <h1 className='title'>Open Coverage Documentation</h1>
-        <p className='subtitle'>
-          Integration: Using the public Open Coverage service
-        </p>
+        <h1 className='title'>Open Coverage Documentation: Integration</h1>
+        <p className='subtitle'>Using the public Open Coverage service</p>
 
         <div className='notification is-danger'>
           Do not integrate with private repositories. Use the self-hosted option
