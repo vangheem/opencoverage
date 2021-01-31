@@ -50,7 +50,7 @@ export default function Home () {
           <div className='container'>
             <img src='logo/logo2-crp.png' title='Open coverage logo' />
             <h1 className='subtitle'>
-              Open Coverage: Reporting for open source and private projects
+              Open Coverage: Code reporting for open source and private projects
             </h1>
           </div>
         </div>
@@ -60,8 +60,8 @@ export default function Home () {
       <div className='container'>
         <div className='message is-info'>
           <div className='message-body'>
-            An open source project with MIT license to provide robust coverage
-            reporting in your open source and private projects.
+            An open source project with MIT license to provide robust code
+            coverage reporting in your open source and private projects.
           </div>
         </div>
         <section className='section'>

@@ -9,7 +9,10 @@ export default class Layout extends Component {
     return (
       <>
         <div className='layoutwrapper'>
-          <Header title={this.props.title} />
+          <Header
+            title={this.props.title}
+            description={this.props.description}
+          />
           {children}
         </div>
         <Footer />

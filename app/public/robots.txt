@@ -1,0 +1,6 @@
+Sitemap: https://open-coverage.org/sitemap.xml
+
+User-agent: *
+Allow: /*
+
+Disallow: /api/*
