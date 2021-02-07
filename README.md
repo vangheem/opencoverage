@@ -8,33 +8,33 @@
 
 Free and open source alternative providing coverage reporting and diff coverage reporting.
 
-The project can be a simple replacement for codecov or coveralls for teams working
-on private repos.
+The project can be simple replacement for Codecov or coveralls for teams working
+on private repositories.
 
 (some of the enterprise option pricing seemed a little unreasonable)
 
 Features:
 
-- coverage reporting
-- diff coverage reporting
-- github integration: PRs, comments
-- codecov cli compatible
+- Coverage reporting
+- Diff coverage reporting
+- GitHub integration: PRs, comments
+- Codecov CLI compatible
 
 Requirements:
 
-- sqlalchemy compatible backend(pg, sqlite, mysql, et)
-- opencoverage backend
-- opencoverage frontend
+- [SQLAlchemy](https://www.sqlalchemy.org/ "Link to SQLAlchemy site") compatible backend(PostgreSQL, SQLite, MySQL, etc)
+- Open Coverage backend
+- Open Coverage frontend
 
 SCM integrations:
 
-- [x] github
-- [ ] bitbucket
-- [ ] gitlab
+- [x] GitHub
+- [ ] Bitbucket
+- [ ] GitLab
 
 ## Configuration
 
-To run the server yourself, you need to create a github application and install
+To run the server yourself, you need to create a GitHub application and install
 it for your organization.
 
 All configuration is done with env variables.
@@ -46,15 +46,15 @@ All configuration is done with env variables.
 - dsn: connection string for backend database
 - cors: hosts frontend runs on
 - scm: enum(`github`)
-- github_app_id: id of app
+- github_app_id: ID of app
 - github_app_pem_file: pem file for application you created
-- github_default_installation_id: id of org this app is installed on
+- github_default_installation_id: ID of org this app is installed on
 
 ## Backend development
 
 Develop:
 
-```
+```sh
 make install-dev
 ```
 
@@ -62,32 +62,33 @@ Tests:
 
 Run docker compose first:
 
-```
+```sh
 docker-compose up postgres
 ```
 
-```
+```sh
 make test
 ```
 
 Run:
 
-```
+```sh
 make run
 ```
 
 ## Frontend development
 
-This project uses nextjs. See the `app` directory for details.
+This project uses [Next.js](https://nextjs.org/ "Link to Next.js site").
+See the `app` directory for details.
 
 ## Send report from CI
 
-The backend is compatible with the codecov CLI.
+The backend is compatible with the Codecov CLI.
 
 You need to provide the installation id of your org as the `--token` value
 or `dummy` if you are using the `github_default_installation_id` setting
 and only using the server for a single org.
 
-```
+```sh
 codecov --url="http://<installed-host>:8000" --token=<github installation id> --slug=vangheem/opencoverage
 ```
