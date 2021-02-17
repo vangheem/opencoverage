@@ -8,8 +8,7 @@
 
 Free and open source alternative providing coverage reporting and diff coverage reporting.
 
-The project can be simple replacement for Codecov or coveralls for teams working
-on private repositories.
+The project can be simple replacement for [Codecov](https://about.codecov.io/) or [Coveralls](https://coveralls.io/) for teams working on private repositories.
 
 (some of the enterprise option pricing seemed a little unreasonable)
 
@@ -31,6 +30,33 @@ SCM integrations:
 - [x] GitHub
 - [ ] Bitbucket
 - [ ] GitLab
+
+## Prerequisites
+
+Please make sure that you have the following dependencies installed
+
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+### Development
+
+- [Poetry](https://python-poetry.org/)
+
+## Getting started
+
+You can use `docker-compose` to start Open Coverage.
+
+```sh
+docker-compose up
+```
+
+This will start the backend, frontend, PostgreSQL and NGINX.
+If you want to change to another supported database you have to adjust the *docker-compose.yaml* file.
+
+Depending on your machine and internet connection is can take a moment till everything is running.
+Once `docker-compose` is ready you can browse to http://localhost:3000/ to checkout the frontend and documentation.
+
+![Open Coverage Frontend Picture](assets/opencoverage-ui.png)
 
 ## Configuration
 
