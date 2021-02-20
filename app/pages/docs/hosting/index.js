@@ -13,12 +13,12 @@ function Docs ({ params }) {
       <div className='container'>
         <br />
         <h1 className='title'>Open Coverage Documentation: Hosting</h1>
-        <p className='subtitle'>Host open coverage on-prem</p>
+        <p className='subtitle'>Host Open Coverage on-prem</p>
 
         <div className='notification'>
           Open Coverage is distributed as 2{' '}
           <a href='https://hub.docker.com/u/opencoverage' target='_blank'>
-            docker containers
+            Docker containers
           </a>
           . One for the frontend and one for the API server.
         </div>
@@ -26,7 +26,7 @@ function Docs ({ params }) {
         <div className='section'>
           <h2 className='title'>Create GitHub Application</h2>
           <p>
-            To run Open Coverage, you will need to create your own github
+            To run Open Coverage, you will need to create your own GitHub
             application.
           </p>
           <div className='section'>
@@ -77,7 +77,8 @@ function Docs ({ params }) {
             <p>There are 3 requirements to run Open Coverage:</p>
             <ul>
               <li>
-                <b>Database</b> (PostgreSQL recommended)
+                <b>Database</b> (<a href='https://www.postgresql.org/' target='_blank'>
+                PostgreSQL</a> is recommended)
               </li>
               <li>
                 <b>API Server</b>
@@ -158,11 +159,11 @@ services:
             <tbody>
               <tr>
                 <td>HOST</td>
-                <td>Host to startup on. Defaults to `0.0.0.0`</td>
+                <td>Host to startup on. Defaults to <span className='tag'>0.0.0.0</span></td>
               </tr>
               <tr>
                 <td>ROOT_PATH</td>
-                <td>Path API is exposed at. Defaults of `/`</td>
+                <td>Path API is exposed at. Defaults of <span className='tag'>/</span></td>
               </tr>
               <tr>
                 <td>PUBLIC_URL</td>
@@ -178,7 +179,7 @@ services:
               </tr>
               <tr>
                 <td>SCM</td>
-                <td>Only supported SCM value is `github` right now</td>
+                <td>Only supported SCM value is <span className='tag'>github</span> right now</td>
               </tr>
               <tr>
                 <td>GITHUB_APP_ID</td>
@@ -191,7 +192,7 @@ services:
               <tr>
                 <td>GITHUB_DEFAULT_INSTALLATION_ID</td>
                 <td>
-                  Installation id to use if `-` given for `--token` value in
+                  Installation ID to use if <span className='tag'>-</span> given for <span className='tag'>--token</span> value in
                   codecov upload
                 </td>
               </tr>
@@ -220,7 +221,8 @@ services:
         <div className='section'>
           <h2 className='title'>Serving with NGINX</h2>
           <div className='content'>
-            <p>Use NGINX to serve Frontend and API:</p>
+            <p>Use <a href='https://www.nginx.com/' target='_blank'>
+                NGINX</a> to serve Frontend and API:</p>
             {/* prettier-ignore */}
             <Highlight className='yml'>
 {`
@@ -228,7 +230,7 @@ version: "2"
 services:
 ...
   nginx:
-    image: nginx:1.19.6
+    image: nginx:1.19.7
     restart: always
     volumes:
       - ${`{PWD}`}/conf/nginx-templates:/etc/nginx/templates
@@ -248,9 +250,10 @@ services:
             {/* prettier-ignore-end */}
           </div>
           <p>
-            Where the file `conf/nginx-templates/default.conf.template`
+            Where the file <span className='tag'>conf/nginx-templates/default.conf.template</span>
             contains:
           </p>
+          <br></br>
           {/* prettier-ignore */}
           <Highlight className='yml'>
 {`
@@ -261,18 +264,18 @@ services:
       listen       80;
       listen  [::]:80;
       server_name  _;
-  
+
       client_max_body_size 100M;
       location / {
           proxy_pass http://frontend:3000;
       }
-  
+
       location /api/ {
         proxy_pass_header Server;
         proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Scheme https;  // set scheme here
-        proxy_set_header X-Forwarded-Proto https;  
+        proxy_set_header X-Forwarded-Proto https;
         proxy_pass http://api/;
       }
   }
@@ -281,7 +284,7 @@ services:
           {/* prettier-ignore-end */}
           <p>
             This will expose the frontend at the root of the site and the API
-            server at `/api`.
+            server at <span className='tag'>/api</span>.
           </p>
         </div>
       </div>

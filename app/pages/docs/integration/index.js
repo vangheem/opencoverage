@@ -42,7 +42,7 @@ function InstallOpenCoverage ({ params }) {
         <img src='/docs/install-id.png' />
       </p>
       <p>
-        In this example, the install id is <span className='tag'>14396163</span>
+        In this example, the install ID is <span className='tag'>14396163</span>
         .
       </p>
     </>

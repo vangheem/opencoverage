@@ -20,11 +20,11 @@ function Docs ({ params }) {
           </a>
           <a href='/docs/hosting' className='box'>
             <h2 className='title'>Hosting</h2>
-            Host private projects yourself
+            Host Open Coverage on-prem
           </a>
           <a href='https://github.com/vangheem/opencoverage' className='box'>
             <h2 className='title'>Contribute</h2>
-            Contribute to improving Open Coverage
+            Contribute to Open Coverage
           </a>
         </div>
       </div>
